@@ -1,164 +1,140 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AEGIS BioNode | Intelligent Perfusion Bioreactor</title>
-    <meta name="description" content="Modular gyroid perfusion bioreactor with sterile optical sensor docking.">
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f7fa;
-            color: #1d2b34;
-            line-height: 1.7;
-        }
-        .hero {
-            background: white;
-            padding: 80px 10%;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-        .hero h1 {
-            font-size: 55px;
-            color: #123b52;
-            margin-bottom: 10px;
-        }
-        .subtitle { font-size: 22px; color: #526777; }
-        .tag {
-            display: inline-block;
-            background: #dcebf0;
-            padding: 8px 18px;
-            border-radius: 25px;
-            margin: 8px;
-            font-size: 14px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            padding: 40px 20px;
-        }
-        .card {
-            background: white;
-            padding: 35px;
-            margin: 30px 0;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
-        h2 {
-            color: #123b52;
-            font-size: 32px;
-        }
-        .diagram {
-            width: 100%;
-            border-radius: 18px;
-            margin: 20px 0;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-        .box {
-            background: #eef4f7;
-            padding: 25px;
-            border-radius: 15px;
-        }
-        footer {
-            text-align: center;
-            padding: 30px;
-            background: white;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AEGIS BioNode | Intelligent Perfusion Bioreactor</title>
+  <meta name="description" content="Presentation-ready 3D concept page for the AEGIS BioNode intelligent gyroid perfusion bioreactor.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f6f8fb;
+      --muted: #aeb8c8;
+      --panel: rgba(8, 13, 23, 0.76);
+      --line: rgba(255, 255, 255, 0.16);
+      --cyan: #3ff0ff;
+      --green: #8cffb1;
+      --gold: #ffd36c;
+      --rose: #ff6f91;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--ink);
+      background: radial-gradient(circle at 12% 18%, rgba(63,240,255,.13), transparent 30%), radial-gradient(circle at 78% 30%, rgba(140,255,177,.11), transparent 32%), linear-gradient(135deg, #050810 0%, #101522 44%, #070a12 100%);
+    }
+    #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
+    .fallback {
+      position: fixed; inset: 0; z-index: 1; display: grid; place-items: center; pointer-events: none; perspective: 1000px;
+    }
+    body.webgl-live .fallback { opacity: 0; }
+    .bio-core { position: relative; width: min(42vw, 540px); aspect-ratio: 1; transform-style: preserve-3d; animation: spin 18s linear infinite; filter: drop-shadow(0 0 42px rgba(63,240,255,.3)); }
+    .bio-core:before { content: ""; position: absolute; inset: 33%; border-radius: 50%; background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.9), transparent 9%), radial-gradient(circle at center, rgba(63,240,255,.34), rgba(140,255,177,.16) 48%, transparent 72%); border: 1px solid rgba(255,255,255,.22); box-shadow: 0 0 70px rgba(63,240,255,.42), inset 0 0 30px rgba(140,255,177,.2); }
+    .orbit { position: absolute; inset: 12%; border: 1px solid rgba(63,240,255,.32); border-radius: 50%; transform-style: preserve-3d; }
+    .orbit:nth-child(1) { transform: rotateX(72deg) rotateZ(14deg); }
+    .orbit:nth-child(2) { transform: rotateY(68deg) rotateZ(42deg); border-color: rgba(140,255,177,.36); }
+    .orbit:nth-child(3) { transform: rotateX(36deg) rotateY(60deg) rotateZ(88deg); border-color: rgba(255,211,108,.3); }
+    .dot { position: absolute; width: 11px; height: 11px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 18px var(--cyan); animation: breathe 2.8s ease-in-out infinite; }
+    .dot:nth-child(4) { left: 18%; top: 36%; background: var(--green); }
+    .dot:nth-child(5) { left: 54%; top: 14%; background: var(--gold); animation-delay: -.7s; }
+    .dot:nth-child(6) { left: 82%; top: 48%; animation-delay: -1.3s; }
+    .dot:nth-child(7) { left: 38%; top: 79%; background: var(--green); animation-delay: -2s; }
+    .page { position: relative; z-index: 2; min-height: 100vh; display: grid; grid-template-columns: minmax(280px, 400px) 1fr minmax(260px, 340px); gap: 20px; padding: 24px; }
+    .panel { align-self: start; border: 1px solid var(--line); background: var(--panel); backdrop-filter: blur(18px); box-shadow: 0 18px 55px rgba(0,0,0,.3); border-radius: 8px; min-width: 0; }
+    .left { display: flex; flex-direction: column; gap: 18px; padding: 22px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .mark { width: 42px; height: 42px; border: 1px solid rgba(63,240,255,.55); border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 28px rgba(63,240,255,.28); }
+    .mark:after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 16px var(--green); }
+    .brand strong { display: block; font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; }
+    .brand span { display: block; color: var(--muted); font-size: .82rem; margin-top: 2px; }
+    .eyebrow { margin: 0 0 10px; color: var(--green); font-weight: 800; font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(2.2rem, 5.2vw, 5rem); line-height: .92; letter-spacing: 0; }
+    .lead { margin: 0; color: #d9e3ef; line-height: 1.55; font-size: 1rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { border: 1px solid var(--line); border-radius: 999px; padding: 7px 10px; font-size: .76rem; background: rgba(255,255,255,.06); white-space: nowrap; }
+    .controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    button { border: 1px solid var(--line); background: rgba(255,255,255,.07); color: var(--ink); min-height: 42px; border-radius: 7px; font: inherit; font-size: .84rem; cursor: pointer; }
+    button.active { background: linear-gradient(135deg, rgba(63,240,255,.24), rgba(140,255,177,.16)); border-color: rgba(63,240,255,.62); }
+    .center { align-self: end; justify-self: center; text-align: center; max-width: 780px; margin-bottom: 28px; text-shadow: 0 4px 28px rgba(0,0,0,.75); pointer-events: none; }
+    .headline { margin: 0; font-size: clamp(2.7rem, 7.8vw, 7.1rem); line-height: .9; letter-spacing: 0; }
+    .subtitle { margin: 18px auto 0; max-width: 640px; color: #dce6f2; line-height: 1.48; font-size: clamp(1rem, 1.5vw, 1.24rem); }
+    .right { display: flex; flex-direction: column; gap: 14px; padding: 16px; }
+    .metric { padding: 14px; border-radius: 8px; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.1); }
+    .metric span { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .8rem; margin-bottom: 8px; }
+    .metric strong { font-size: 1.45rem; color: var(--ink); }
+    .bar { height: 7px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.1); }
+    .fill { height: 100%; border-radius: inherit; transform-origin: left; background: linear-gradient(90deg, var(--cyan), var(--green), var(--gold)); box-shadow: 0 0 18px rgba(63,240,255,.35); }
+    .flow { padding: 16px; border: 1px solid var(--line); background: rgba(8,13,23,.84); border-radius: 8px; }
+    .flow h2 { margin: 0 0 12px; font-size: .9rem; letter-spacing: .14em; text-transform: uppercase; }
+    .step { display: grid; grid-template-columns: 22px 1fr; gap: 10px; color: #cad5e5; font-size: .85rem; line-height: 1.35; margin: 10px 0; }
+    .node { width: 10px; height: 10px; margin-top: 4px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 15px rgba(63,240,255,.65); }
+    .strip { position: fixed; z-index: 3; left: 24px; right: 24px; bottom: 16px; display: flex; justify-content: space-between; gap: 16px; color: rgba(246,248,251,.72); font-size: .78rem; pointer-events: none; }
+    @keyframes spin { from { transform: translateY(-150px) rotateX(62deg) rotateZ(0); } to { transform: translateY(-150px) rotateX(62deg) rotateZ(360deg); } }
+    @keyframes breathe { 50% { transform: scale(1.8); opacity: .58; } }
+    @media (max-width: 980px) { body { overflow-y: auto; } .page { grid-template-columns: 1fr; padding: 14px; gap: 14px; overflow: hidden; } .center { order: -1; width: 330px; max-width: calc(100vw - 28px); margin: 24vh auto 0; padding: 0 8px; } .center .eyebrow { font-size: .72rem; letter-spacing: .14em; } .headline { font-size: clamp(2.35rem, 12vw, 4.2rem); } .subtitle { font-size: .95rem; max-width: 100%; } h1 { font-size: 2.2rem; } .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bio-core { width: min(84vw, 360px); } .strip { position: relative; left: auto; right: auto; bottom: auto; padding: 0 14px 16px; } }
+  </style>
 </head>
 <body>
-
-    <section class="hero">
-        <h1>AEGIS BioNode</h1>
-        <p class="subtitle">Modular Gyroid Perfusion Bioreactor with Sterile Optical Sensor Docking Interface</p>
-        <span class="tag">Biotechnology</span>
-        <span class="tag">Bioreactor Engineering</span>
-        <span class="tag">Smart Monitoring</span>
-        <span class="tag">Tissue Engineering</span>
+  <canvas id="scene" aria-label="Interactive 3D AEGIS BioNode visualization"></canvas>
+  <div class="fallback" aria-hidden="true"><div class="bio-core"><span class="orbit"></span><span class="orbit"></span><span class="orbit"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+  <main class="page">
+    <section class="panel left">
+      <div class="brand"><div class="mark"></div><div><strong>AEGIS BioNode</strong><span>Intelligent perfusion bioreactor</span></div></div>
+      <div><p class="eyebrow">Presentation Mode</p><h1>Living tissue engine.</h1></div>
+      <p class="lead">A modular gyroid perfusion bioreactor concept with sterile optical sensor docking, low-shear flow architecture, and smart monitoring for tissue engineering workflows.</p>
+      <div class="chips"><span class="chip">Gyroid perfusion core</span><span class="chip">Sterile septum-lock dock</span><span class="chip">Optical sensor telemetry</span><span class="chip">Flow condition mapping</span></div>
+      <div class="controls"><button class="active" data-mode="perfusion">Perfusion</button><button data-mode="sensor">Sensors</button><button data-mode="sterile">Sterile</button></div>
     </section>
-
-    <div class="container">
-
-        <div class="card">
-            <h2>Project Overview</h2>
-            <p>AEGIS BioNode is a conceptual intelligent bioreactor platform designed to combine advanced geometric architecture, controlled perfusion, and modular sensing technology.</p>
-            <p>The system uses a vascular-mimetic gyroid lattice structure to create interconnected transport pathways while introducing a sterile modular sensor interface.</p>
-        </div>
-
-        <div class="card">
-            <h2>3D Visual Simulations</h2>
-            <p>High-detail conceptual 3D renders of the AEGIS BioNode system:</p>
-            
-            <h3>Full Modular Assembly Render</h3>
-            <img class="diagram" src="https://grok.x.ai/generated-image-ssLWV" alt="3D CGI of AEGIS BioNode full assembly">
-            
-            <h3>Gyroid Lattice Cross-Section with Flow</h3>
-            <img class="diagram" src="https://grok.x.ai/generated-image-fQWfk" alt="Gyroid internal structure showing perfusion flow">
-        </div>
-
-        <div class="card">
-            <h2>System Architecture</h2>
-            <img class="diagram" src="aegis_diagram.png" alt="Technical Diagram">
-        </div>
-
-        <div class="card grid">
-            <div class="box">
-                <h2>1. Gyroid Perfusion Core</h2>
-                <ul>
-                    <li>High surface area</li>
-                    <li>Interconnected flow channels</li>
-                    <li>Controlled perfusion pathways</li>
-                    <li>Improved transport potential</li>
-                </ul>
-            </div>
-            <div class="box">
-                <h2>2. Septum-Lock Interface</h2>
-                <ul>
-                    <li>Reusable sensor module</li>
-                    <li>Sterile interface barrier</li>
-                    <li>Modular replacement</li>
-                </ul>
-            </div>
-            <div class="box">
-                <h2>3. Intelligent Monitoring</h2>
-                <ul>
-                    <li>pH monitoring</li>
-                    <li>Dissolved oxygen monitoring</li>
-                    <li>Temperature monitoring</li>
-                    <li>Spatial condition mapping</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Research Development Roadmap</h2>
-            <ol>
-                <li>Design and optimization of gyroid reactor geometry</li>
-                <li>Computational fluid dynamics simulation</li>
-                <li>3D printed prototype fabrication</li>
-                <li>Flow visualization testing</li>
-                <li>Sensor interface development</li>
-                <li>Future biological validation studies</li>
-            </ol>
-        </div>
-
-        <div class="card">
-            <h2>Innovation Focus</h2>
-            <p>The primary innovation is the integration of a modular sterile sensing architecture with a structured perfusion environment.</p>
-        </div>
-
-    </div>
-
-    <footer>
-        AEGIS BioNode Research Concept • Designed by Meena Vignesh M
-    </footer>
-
+    <section class="center"><p class="eyebrow">Modular Biomanufacturing Platform</p><p class="headline">AEGIS<br>BioNode</p><p class="subtitle">A presentation-ready 3D concept for a next-generation bioreactor that combines non-Euclidean lattice geometry, controlled nutrient transport, and real-time optical sensing.</p></section>
+    <aside class="panel right">
+      <div class="metric"><span>Perfusion Uniformity <strong id="m1">96.4%</strong></span><div class="bar"><div class="fill" id="b1" style="transform:scaleX(.964)"></div></div></div>
+      <div class="metric"><span>Shear Reduction <strong id="m2">88.7%</strong></span><div class="bar"><div class="fill" id="b2" style="transform:scaleX(.887)"></div></div></div>
+      <div class="metric"><span>Sensor Stability <strong id="m3">99.1%</strong></span><div class="bar"><div class="fill" id="b3" style="transform:scaleX(.991)"></div></div></div>
+      <div class="flow"><h2>System Flow</h2><div class="step"><span class="node"></span><span>Media enters through a distributed inlet manifold and moves through a gyroid lattice core.</span></div><div class="step"><span class="node"></span><span>Embedded optical ports track pH, dissolved oxygen, temperature, and spatial gradients.</span></div><div class="step"><span class="node"></span><span>The sterile docking interface allows sensor replacement without opening the culture chamber.</span></div></div>
+    </aside>
+  </main>
+  <footer class="strip"><span>Simulation live</span><span>Drag to rotate · Scroll to zoom · Press 1, 2, 3 for modes</span></footer>
+  <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.165.0/build/three.module.js"}}</script>
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js";
+    const canvas = document.querySelector('#scene');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x060913, .035);
+    const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, .1, 100);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; controls.autoRotate = true; controls.autoRotateSpeed = .55; controls.enablePan = false; controls.minDistance = 7; controls.maxDistance = 20;
+    const group = new THREE.Group(); scene.add(group);
+    const palettes = { perfusion:[0x3ff0ff,0x8cffb1,0xffd36c], sensor:[0x8cffb1,0xffffff,0x3ff0ff], sterile:[0xff6f91,0xffd36c,0x9b8cff] };
+    let mode = 'perfusion';
+    function fit(){ if(innerWidth < 700){ camera.position.set(0,2.4,17); group.position.y = 3.2; group.scale.setScalar(.5); } else { camera.position.set(0,2.4,13); group.position.y = 2.45; group.scale.setScalar(.78); } camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); }
+    fit(); addEventListener('resize', fit);
+    const nodes = [], base = [], links = [];
+    const nodeGeo = new THREE.IcosahedronGeometry(.085, 2);
+    for(let i=0;i<92;i++){ const phi=Math.acos(1-2*(i+.5)/92), theta=Math.PI*(1+Math.sqrt(5))*i, r=3.1+Math.sin(i*1.7)*.42; const p=new THREE.Vector3(Math.cos(theta)*Math.sin(phi)*r, Math.cos(phi)*r*.82, Math.sin(theta)*Math.sin(phi)*r); base.push(p); const mat=new THREE.MeshStandardMaterial({color:palettes[mode][i%3], emissive:palettes[mode][i%3], emissiveIntensity:1.3, roughness:.32, metalness:.12}); const mesh=new THREE.Mesh(nodeGeo, mat); mesh.position.copy(p); mesh.userData.seed=Math.random()*100; nodes.push(mesh); group.add(mesh); }
+    const linkMat = new THREE.LineBasicMaterial({color:0x3ff0ff, transparent:true, opacity:.18, blending:THREE.AdditiveBlending});
+    for(let i=0;i<base.length;i++){ for(let j=i+1;j<base.length;j++){ const d=base[i].distanceTo(base[j]); if(d<1.28 || (i%13===0 && j%17===0)){ const g=new THREE.BufferGeometry().setFromPoints([base[i], base[j]]); const line=new THREE.Line(g, linkMat.clone()); line.userData={a:i,b:j,seed:Math.random()*100,baseOpacity:d<1.28?.2:.1}; links.push(line); group.add(line); } } }
+    const core = new THREE.Mesh(new THREE.SphereGeometry(1.15,64,64), new THREE.MeshPhysicalMaterial({color:0x10243a, emissive:0x3ff0ff, emissiveIntensity:.5, roughness:.24, metalness:.18, transparent:true, opacity:.78})); group.add(core);
+    const helix = new THREE.Mesh(new THREE.TorusKnotGeometry(2.1,.018,260,12,3,7), new THREE.MeshBasicMaterial({color:0x8cffb1, transparent:true, opacity:.82, blending:THREE.AdditiveBlending})); group.add(helix);
+    for(let i=0;i<5;i++){ const ring=new THREE.Mesh(new THREE.TorusGeometry(4.2+i*.24,.008,8,180), new THREE.MeshBasicMaterial({color:palettes[mode][i%3], transparent:true, opacity:.2-i*.02, blending:THREE.AdditiveBlending})); ring.rotation.x=Math.PI/2+i*.2; ring.rotation.y=i*.35; group.add(ring); }
+    const particlesGeo = new THREE.BufferGeometry(); const particlePositions = new Float32Array(1200*3);
+    for(let i=0;i<1200;i++){ const r=5.2+Math.random()*11, th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1); particlePositions[i*3]=Math.cos(th)*Math.sin(ph)*r; particlePositions[i*3+1]=Math.cos(ph)*r*.7; particlePositions[i*3+2]=Math.sin(th)*Math.sin(ph)*r; }
+    particlesGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions,3)); const particles = new THREE.Points(particlesGeo, new THREE.PointsMaterial({color:0xb7faff,size:.024,transparent:true,opacity:.48,depthWrite:false,blending:THREE.AdditiveBlending})); scene.add(particles);
+    scene.add(new THREE.AmbientLight(0x8ba4c2,.7)); const key=new THREE.PointLight(0x3ff0ff,6.2,30); key.position.set(4,5,7); scene.add(key); const rim=new THREE.PointLight(0x8cffb1,4.5,28); rim.position.set(-5,-2,-6); scene.add(rim);
+    function setMode(next){ mode=next; document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode)); const colors=palettes[mode]; nodes.forEach((n,i)=>{ n.material.color.setHex(colors[i%3]); n.material.emissive.setHex(colors[i%3]); }); links.forEach((l,i)=>l.material.color.setHex(colors[i%3])); core.material.emissive.setHex(colors[0]); helix.material.color.setHex(colors[1]); key.color.setHex(colors[0]); rim.color.setHex(colors[1]); }
+    document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode))); addEventListener('keydown',e=>{ if(e.key==='1')setMode('perfusion'); if(e.key==='2')setMode('sensor'); if(e.key==='3')setMode('sterile'); });
+    const m1=document.querySelector('#m1'),m2=document.querySelector('#m2'),m3=document.querySelector('#m3'),b1=document.querySelector('#b1'),b2=document.querySelector('#b2'),b3=document.querySelector('#b3');
+    const tmp = new THREE.Vector3();
+    function animate(ms){ const t=ms*.001; group.rotation.y=t*.115; group.rotation.x=Math.sin(t*.2)*.08; helix.rotation.x=t*.18; helix.rotation.y=-t*.14; core.scale.setScalar(1+Math.sin(t*1.9)*.035); nodes.forEach((n,i)=>{ const seed=n.userData.seed; n.scale.setScalar(1+Math.sin(t*2.7+seed)*.34); tmp.copy(base[i]).multiplyScalar(1+Math.sin(t*.9+seed)*.025); n.position.copy(tmp); n.material.emissiveIntensity=1.1+Math.max(0,Math.sin(t*3+seed))*1.25; }); links.forEach(l=>{ const p=l.geometry.attributes.position, a=nodes[l.userData.a].position, b=nodes[l.userData.b].position; p.setXYZ(0,a.x,a.y,a.z); p.setXYZ(1,b.x,b.y,b.z); p.needsUpdate=true; l.material.opacity=l.userData.baseOpacity+Math.max(0,Math.sin(t*4.6+l.userData.seed))*.22; }); particles.rotation.y=-t*.035; const a=95.8+Math.sin(t*.8)*1.2, b=88.5+Math.cos(t*.55)*1.1, c=98.9+Math.sin(t*.7)*.4; m1.textContent=a.toFixed(1)+'%'; m2.textContent=b.toFixed(1)+'%'; m3.textContent=c.toFixed(1)+'%'; b1.style.transform=`scaleX(${a/100})`; b2.style.transform=`scaleX(${b/100})`; b3.style.transform=`scaleX(${c/100})`; controls.update(); renderer.render(scene,camera); document.body.classList.add('webgl-live'); requestAnimationFrame(animate); }
+    requestAnimationFrame(animate);
+  </script>
 </body>
 </html>
