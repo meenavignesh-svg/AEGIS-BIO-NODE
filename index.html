@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AEGIS BioNode | Technical 3D Prototype</title>
-  <meta name="description" content="Interactive black-and-white technical 3D prototype of the AEGIS BioNode modular gyroid perfusion bioreactor with true TPMS geometry.">
+  <meta name="description" content="Interactive B&W technical 3D prototype – true gyroid, animated inlet/outlet, sterile sensor docking, product formation enhancement.">
   <style>
     :root {
       color-scheme: dark;
@@ -12,7 +12,7 @@
       --ink: #f0f0f0;
       --muted: #9a9a9a;
       --line: rgba(255,255,255,0.18);
-      --panel: rgba(12,12,12,0.88);
+      --panel: rgba(12,12,12,0.9);
       font-family: "SF Mono", "Roboto Mono", ui-monospace, Menlo, Consolas, monospace;
     }
     * { box-sizing: border-box; margin: 0; }
@@ -20,7 +20,7 @@
     #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
     .overlay {
       position: relative; z-index: 2; height: 100%; display: grid;
-      grid-template-columns: 280px 1fr 260px;
+      grid-template-columns: 290px 1fr 270px;
       pointer-events: none;
     }
     .panel {
@@ -28,77 +28,98 @@
       background: var(--panel);
       border: 1px solid var(--line);
       backdrop-filter: blur(12px);
-      padding: 18px 16px;
-      display: flex; flex-direction: column; gap: 14px;
+      padding: 16px 14px;
+      display: flex; flex-direction: column; gap: 12px;
+      overflow-y: auto;
     }
-    .brand { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
-    .brand strong { display: block; color: var(--ink); font-size: 0.95rem; letter-spacing: 0.08em; margin-top: 4px; }
-    h1 { font-size: 1.35rem; font-weight: 500; line-height: 1.25; }
-    .lead { font-size: 0.78rem; line-height: 1.5; color: var(--muted); }
-    .section-label { font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
-    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
-    .chip { border: 1px solid var(--line); padding: 4px 8px; font-size: 0.68rem; color: var(--muted); border-radius: 2px; }
-    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .brand { font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+    .brand strong { display: block; color: var(--ink); font-size: 0.9rem; letter-spacing: 0.06em; margin-top: 3px; }
+    h1 { font-size: 1.25rem; font-weight: 500; line-height: 1.25; }
+    .lead { font-size: 0.74rem; line-height: 1.45; color: var(--muted); }
+    .section-label { font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    .chip { border: 1px solid var(--line); padding: 3px 7px; font-size: 0.65rem; color: var(--muted); border-radius: 2px; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
     button {
       border: 1px solid var(--line); background: transparent; color: var(--ink);
-      font: inherit; font-size: 0.72rem; letter-spacing: 0.04em; padding: 8px 6px;
+      font: inherit; font-size: 0.7rem; letter-spacing: 0.03em; padding: 7px 5px;
       cursor: pointer; transition: all 0.15s; border-radius: 2px;
     }
     button:hover, button.active { background: #fff; color: #000; border-color: #fff; }
-    .metric { border: 1px solid var(--line); padding: 10px; border-radius: 2px; }
-    .metric span { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--muted); margin-bottom: 4px; }
-    .metric strong { font-size: 1.1rem; font-weight: 500; color: var(--ink); }
+    .metric { border: 1px solid var(--line); padding: 9px; border-radius: 2px; }
+    .metric span { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--muted); margin-bottom: 3px; }
+    .metric strong { font-size: 1.05rem; font-weight: 500; color: var(--ink); }
     .bar { height: 3px; background: #222; border-radius: 1px; overflow: hidden; }
     .fill { height: 100%; background: #fff; transform-origin: left; }
-    .flow { border: 1px solid var(--line); padding: 12px; border-radius: 2px; }
-    .flow h2 { font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-    .step { display: grid; grid-template-columns: 14px 1fr; gap: 8px; font-size: 0.72rem; line-height: 1.4; color: #ccc; margin: 8px 0; }
-    .node { width: 6px; height: 6px; margin-top: 5px; border: 1px solid #fff; border-radius: 50%; }
+    .flow { border: 1px solid var(--line); padding: 10px; border-radius: 2px; }
+    .flow h2 { font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .step { display: grid; grid-template-columns: 12px 1fr; gap: 7px; font-size: 0.7rem; line-height: 1.35; color: #ccc; margin: 7px 0; }
+    .node { width: 6px; height: 6px; margin-top: 4px; border: 1px solid #fff; border-radius: 50%; }
+    .benefit {
+      border: 1px solid var(--line); padding: 10px; border-radius: 2px;
+      font-size: 0.7rem; line-height: 1.4; color: #bbb;
+    }
+    .benefit strong { color: #fff; display: block; margin-bottom: 4px; font-size: 0.72rem; }
     .center-title {
-      position: absolute; top: 28px; left: 50%; transform: translateX(-50%);
+      position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
       text-align: center; pointer-events: none; z-index: 3;
     }
-    .center-title .eyebrow { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
-    .center-title h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 400; letter-spacing: 0.04em; margin-top: 4px; }
+    .center-title .eyebrow { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+    .center-title h2 { font-size: clamp(1.5rem, 3.2vw, 2.2rem); font-weight: 400; letter-spacing: 0.04em; margin-top: 3px; }
     .footer {
-      position: fixed; bottom: 14px; left: 0; right: 0; z-index: 3;
-      display: flex; justify-content: center; gap: 32px;
-      font-size: 0.65rem; letter-spacing: 0.1em; color: var(--muted);
+      position: fixed; bottom: 12px; left: 0; right: 0; z-index: 3;
+      display: flex; justify-content: center; gap: 28px;
+      font-size: 0.62rem; letter-spacing: 0.1em; color: var(--muted);
       pointer-events: none;
     }
-    .hud {
-      position: fixed; top: 50%; right: 18px; transform: translateY(-50%);
-      z-index: 3; writing-mode: vertical-rl; text-orientation: mixed;
-      font-size: 0.6rem; letter-spacing: 0.18em; color: #555; pointer-events: none;
+    .callout {
+      position: absolute; z-index: 4; pointer-events: none;
+      font-size: 0.68rem; letter-spacing: 0.08em; color: #fff;
+      background: rgba(0,0,0,0.75); border: 1px solid rgba(255,255,255,0.35);
+      padding: 4px 8px; border-radius: 2px; white-space: nowrap;
+      transform: translate(-50%, -120%);
+      opacity: 0.95;
+    }
+    .callout::after {
+      content: ''; position: absolute; left: 50%; bottom: -5px;
+      width: 8px; height: 8px; background: rgba(0,0,0,0.75);
+      border-right: 1px solid rgba(255,255,255,0.35);
+      border-bottom: 1px solid rgba(255,255,255,0.35);
+      transform: translateX(-50%) rotate(45deg);
     }
     @media (max-width: 900px) {
       .overlay { grid-template-columns: 1fr; }
       .left, .right { display: none; }
-      .center-title { top: 16px; }
-      .footer { font-size: 0.58rem; gap: 16px; }
+      .center-title { top: 14px; }
+      .footer { font-size: 0.55rem; gap: 14px; }
     }
   </style>
 </head>
 <body>
-  <canvas id="scene" aria-label="AEGIS BioNode technical 3D prototype – true gyroid TPMS"></canvas>
+  <canvas id="scene" aria-label="AEGIS BioNode technical 3D prototype"></canvas>
 
   <div class="center-title">
-    <div class="eyebrow">Technical Prototype · True Gyroid TPMS</div>
+    <div class="eyebrow">Technical Prototype · Animated Flow & Sensor Dock</div>
     <h2>AEGIS BioNode</h2>
   </div>
+
+  <!-- HTML callouts (updated by JS) -->
+  <div id="label-inlet" class="callout" style="display:none">INLET</div>
+  <div id="label-outlet" class="callout" style="display:none">OUTLET</div>
+  <div id="label-sensor" class="callout" style="display:none">SEPTUM-LOCK SENSOR DOCK</div>
 
   <div class="overlay">
     <aside class="panel left">
       <div class="brand">AEGIS BioNode<strong>Modular Gyroid Perfusion Bioreactor</strong></div>
       <h1>Living tissue engine.</h1>
-      <p class="lead">Black-and-white technical prototype using the actual mathematical gyroid (triply periodic minimal surface) as the perfusion core, correctly sized inside the vessel.</p>
+      <p class="lead">True mathematical gyroid core with animated inlet → outlet perfusion and sterile optical sensor docking.</p>
       <div>
         <div class="section-label">Architecture</div>
         <div class="chip-row">
           <span class="chip">True Gyroid TPMS</span>
           <span class="chip">Septum-Lock Dock</span>
-          <span class="chip">Optical Telemetry</span>
-          <span class="chip">Modular Cartridge</span>
+          <span class="chip">Animated Flow</span>
+          <span class="chip">Product Formation</span>
         </div>
       </div>
       <div>
@@ -109,6 +130,10 @@
           <button data-mode="xray">X-Ray</button>
           <button data-mode="core">Core Only</button>
         </div>
+      </div>
+      <div class="benefit">
+        <strong>How it enhances product formation</strong>
+        Continuous low-shear gyroid channels eliminate nutrient depletion zones. Uniform perfusion + real-time optical sensing keeps cells in optimal metabolic state → higher viable yield and consistent product quality.
       </div>
     </aside>
 
@@ -124,14 +149,19 @@
         <div class="bar"><div class="fill" id="b2" style="transform:scaleX(.887)"></div></div>
       </div>
       <div class="metric">
+        <span>Product Formation Gain <strong id="m4">+34%</strong></span>
+        <div class="bar"><div class="fill" id="b4" style="transform:scaleX(.78)"></div></div>
+      </div>
+      <div class="metric">
         <span>Sensor Stability <strong id="m3">99.1%</strong></span>
         <div class="bar"><div class="fill" id="b3" style="transform:scaleX(.991)"></div></div>
       </div>
       <div class="flow">
-        <h2>System Flow</h2>
-        <div class="step"><span class="node"></span><span>Media enters distributed inlet → continuous gyroid channels</span></div>
-        <div class="step"><span class="node"></span><span>Zero-mean-curvature surface eliminates dead zones</span></div>
-        <div class="step"><span class="node"></span><span>Septum-lock dock enables sterile sensor exchange</span></div>
+        <h2>Animated System Flow</h2>
+        <div class="step"><span class="node"></span><span><b>INLET</b> — media enters distributed manifold</span></div>
+        <div class="step"><span class="node"></span><span><b>GYROID CORE</b> — continuous low-shear channels</span></div>
+        <div class="step"><span class="node"></span><span><b>SENSOR DOCK</b> — sterile optical feedback</span></div>
+        <div class="step"><span class="node"></span><span><b>OUTLET</b> — uniform product harvest</span></div>
       </div>
     </aside>
   </div>
@@ -141,7 +171,6 @@
     <span>SCROLL TO ZOOM</span>
     <span>1 SOLID · 2 WIRE · 3 X-RAY · 4 CORE</span>
   </div>
-  <div class="hud">TRUE GYROID · CONTAINED IN VESSEL</div>
 
   <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.165.0/build/three.module.js"}}</script>
   <script type="module">
@@ -157,96 +186,73 @@
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 100);
-    camera.position.set(9.2, 5.0, 11.0);
+    camera.position.set(9.5, 5.2, 11.2);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.28;
+    controls.autoRotateSpeed = 0.22;
     controls.enablePan = false;
     controls.minDistance = 6;
     controls.maxDistance = 26;
-    controls.target.set(0, 0.15, 0);
+    controls.target.set(0, 0.1, 0);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.48));
     const key = new THREE.DirectionalLight(0xffffff, 0.9);
-    key.position.set(5, 9, 7);
-    scene.add(key);
-    const fill = new THREE.DirectionalLight(0xffffff, 0.3);
-    fill.position.set(-6, 2, -5);
-    scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xffffff, 0.35);
-    rim.position.set(-2, -3, 5);
-    scene.add(rim);
+    key.position.set(5, 9, 7); scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.28);
+    fill.position.set(-6, 2, -5); scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xffffff, 0.32);
+    rim.position.set(-2, -3, 5); scene.add(rim);
 
     const group = new THREE.Group();
     scene.add(group);
 
-    // ── Fixed dimensions ────────────────────────────────────────────────────
-    // Vessel (cylinder) is the outer container.
-    // Gyroid must fit strictly inside it with clear clearance.
-    const VESSEL_RADIUS = 3.2;          // outer cylinder radius
-    const VESSEL_LENGTH = 6.8;          // cylinder length (along X)
-    const GYROID_SCALE  = 0.92;         // scale of mathematical gyroid (kept smaller)
-    const GYROID_MAX_R  = 2.35;         // hard radial limit for gyroid points
+    // ── Dimensions (gyroid strictly inside vessel) ───────────────────────────
+    const VESSEL_RADIUS = 3.2;
+    const VESSEL_LENGTH = 6.8;
+    const GYROID_SCALE  = 0.92;
+    const GYROID_MAX_R  = 2.35;
 
     // ── Materials ──
     const matShell = new THREE.MeshStandardMaterial({
       color: 0x222222, emissive: 0xffffff, emissiveIntensity: 0.02,
-      roughness: 0.55, metalness: 0.1, transparent: true, opacity: 0.82, side: THREE.DoubleSide
+      roughness: 0.55, metalness: 0.1, transparent: true, opacity: 0.78, side: THREE.DoubleSide
     });
     const matGyroid = new THREE.MeshStandardMaterial({
-      color: 0xe4e4e4, emissive: 0xffffff, emissiveIntensity: 0.05,
+      color: 0xe4e4e4, emissive: 0xffffff, emissiveIntensity: 0.04,
       roughness: 0.38, metalness: 0.12, side: THREE.DoubleSide
     });
-    const matGyroidWire = new THREE.MeshBasicMaterial({
-      color: 0xffffff, wireframe: true, transparent: true, opacity: 0.75
-    });
-    const matXray = new THREE.MeshBasicMaterial({
-      color: 0xffffff, transparent: true, opacity: 0.07, side: THREE.DoubleSide, depthWrite: false
-    });
+    const matGyroidWire = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.75 });
+    const matXray = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.07, side: THREE.DoubleSide, depthWrite: false });
+    const matMarker = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.6, roughness: 0.3, metalness: 0.2 });
+    const matArrow = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.35, roughness: 0.4, metalness: 0.15 });
 
-    // ── True Gyroid Isosurface (Schoen) ─────────────────────────────────────
+    // ── Gyroid ──────────────────────────────────────────────────────────────
     function gyroid(x, y, z) {
-      return Math.sin(x) * Math.cos(y) + Math.sin(y) * Math.cos(z) + Math.sin(z) * Math.cos(x);
+      return Math.sin(x)*Math.cos(y) + Math.sin(y)*Math.cos(z) + Math.sin(z)*Math.cos(x);
     }
 
     function buildGyroidMesh(resolution = 24) {
       const cell = (Math.PI * 2) / (resolution - 1);
       const half = (resolution - 1) / 2;
       const field = new Float32Array(resolution * resolution * resolution);
-
-      for (let i = 0; i < resolution; i++) {
-        for (let j = 0; j < resolution; j++) {
+      for (let i = 0; i < resolution; i++)
+        for (let j = 0; j < resolution; j++)
           for (let k = 0; k < resolution; k++) {
-            const x = (i - half) * cell;
-            const y = (j - half) * cell;
-            const z = (k - half) * cell;
-            field[i * resolution * resolution + j * resolution + k] = gyroid(x, y, z);
+            const x = (i - half) * cell, y = (j - half) * cell, z = (k - half) * cell;
+            field[i*resolution*resolution + j*resolution + k] = gyroid(x, y, z);
           }
-        }
-      }
 
       const verts = [];
       const vertMap = new Map();
-
       function addVert(x, y, z) {
-        // Apply scale then enforce hard radial clamp so nothing escapes the vessel
-        let px = x * GYROID_SCALE;
-        let py = y * GYROID_SCALE;
-        let pz = z * GYROID_SCALE;
-
-        const r = Math.sqrt(py * py + pz * pz);
-        if (r > GYROID_MAX_R) {
-          const s = GYROID_MAX_R / r;
-          py *= s;
-          pz *= s;
-        }
-        // Also limit length along vessel axis
-        const maxX = (VESSEL_LENGTH * 0.5) - 0.35;
+        let px = x * GYROID_SCALE, py = y * GYROID_SCALE, pz = z * GYROID_SCALE;
+        const r = Math.sqrt(py*py + pz*pz);
+        if (r > GYROID_MAX_R) { const s = GYROID_MAX_R / r; py *= s; pz *= s; }
+        const maxX = VESSEL_LENGTH * 0.5 - 0.4;
         if (Math.abs(px) > maxX) px = Math.sign(px) * maxX;
-
         const key = `${px.toFixed(4)},${py.toFixed(4)},${pz.toFixed(4)}`;
         if (vertMap.has(key)) return vertMap.get(key);
         const idx = verts.length / 3;
@@ -255,52 +261,29 @@
         return idx;
       }
 
-      for (let i = 0; i < resolution - 1; i++) {
-        for (let j = 0; j < resolution - 1; j++) {
-          for (let k = 0; k < resolution - 1; k++) {
-            const v000 = field[i * resolution * resolution + j * resolution + k];
-            const v100 = field[(i+1) * resolution * resolution + j * resolution + k];
-            const v010 = field[i * resolution * resolution + (j+1) * resolution + k];
-            const v001 = field[i * resolution * resolution + j * resolution + (k+1)];
-            const v110 = field[(i+1) * resolution * resolution + (j+1) * resolution + k];
-            const v101 = field[(i+1) * resolution * resolution + j * resolution + (k+1)];
-            const v011 = field[i * resolution * resolution + (j+1) * resolution + (k+1)];
-            const v111 = field[(i+1) * resolution * resolution + (j+1) * resolution + (k+1)];
-
-            const vals = [v000, v100, v010, v001, v110, v101, v011, v111];
-            if (!vals.some(v => v > 0) || !vals.some(v => v < 0)) continue;
-
-            let px = (i + 0.5 - half) * cell;
-            let py = (j + 0.5 - half) * cell;
-            let pz = (k + 0.5 - half) * cell;
-
-            // Project toward isosurface
+      for (let i = 0; i < resolution-1; i++)
+        for (let j = 0; j < resolution-1; j++)
+          for (let k = 0; k < resolution-1; k++) {
+            const get = (a,b,c) => field[(i+a)*resolution*resolution + (j+b)*resolution + (k+c)];
+            const vals = [get(0,0,0),get(1,0,0),get(0,1,0),get(0,0,1),get(1,1,0),get(1,0,1),get(0,1,1),get(1,1,1)];
+            if (!vals.some(v=>v>0) || !vals.some(v=>v<0)) continue;
+            let px = (i+0.5-half)*cell, py = (j+0.5-half)*cell, pz = (k+0.5-half)*cell;
             for (let s = 0; s < 4; s++) {
-              const g = gyroid(px, py, pz);
+              const g = gyroid(px,py,pz);
               const eps = 0.04;
-              const gx = (gyroid(px+eps, py, pz) - gyroid(px-eps, py, pz)) / (2*eps);
-              const gy = (gyroid(px, py+eps, pz) - gyroid(px, py-eps, pz)) / (2*eps);
-              const gz = (gyroid(px, py, pz+eps) - gyroid(px, py, pz-eps)) / (2*eps);
-              const len = Math.sqrt(gx*gx + gy*gy + gz*gz) + 1e-8;
-              px -= (g / len) * gx * 0.35;
-              py -= (g / len) * gy * 0.35;
-              pz -= (g / len) * gz * 0.35;
+              const gx = (gyroid(px+eps,py,pz)-gyroid(px-eps,py,pz))/(2*eps);
+              const gy = (gyroid(px,py+eps,pz)-gyroid(px,py-eps,pz))/(2*eps);
+              const gz = (gyroid(px,py,pz+eps)-gyroid(px,py,pz-eps))/(2*eps);
+              const len = Math.sqrt(gx*gx+gy*gy+gz*gz)+1e-8;
+              px -= (g/len)*gx*0.35; py -= (g/len)*gy*0.35; pz -= (g/len)*gz*0.35;
             }
-
-            if (Math.abs(gyroid(px, py, pz)) > 0.32) continue;
+            if (Math.abs(gyroid(px,py,pz)) > 0.32) continue;
             addVert(px, py, pz);
           }
-        }
-      }
 
-      // Connect nearby points into triangles
       const pts = [];
-      for (let i = 0; i < verts.length; i += 3) {
-        pts.push(new THREE.Vector3(verts[i], verts[i+1], verts[i+2]));
-      }
-
-      const maxDist = 0.48;
-      const idxList = [];
+      for (let i = 0; i < verts.length; i += 3) pts.push(new THREE.Vector3(verts[i], verts[i+1], verts[i+2]));
+      const maxDist = 0.48, idxList = [];
       for (let i = 0; i < pts.length; i++) {
         const neighbours = [];
         for (let j = 0; j < pts.length; j++) {
@@ -308,16 +291,13 @@
           const d = pts[i].distanceTo(pts[j]);
           if (d < maxDist) neighbours.push({ j, d });
         }
-        neighbours.sort((a, b) => a.d - b.d);
-        for (let a = 0; a < Math.min(4, neighbours.length); a++) {
-          for (let b = a + 1; b < Math.min(5, neighbours.length); b++) {
-            const j = neighbours[a].j;
-            const k = neighbours[b].j;
+        neighbours.sort((a,b) => a.d - b.d);
+        for (let a = 0; a < Math.min(4, neighbours.length); a++)
+          for (let b = a+1; b < Math.min(5, neighbours.length); b++) {
+            const j = neighbours[a].j, k = neighbours[b].j;
             if (i < j && i < k) idxList.push(i, j, k);
           }
-        }
       }
-
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
       geo.setIndex(idxList);
@@ -325,142 +305,240 @@
       return geo;
     }
 
-    // Build gyroid (once)
-    const gyroidGeo = buildGyroidMesh(24);
-    const gyroidMesh = new THREE.Mesh(gyroidGeo, matGyroid);
+    const gyroidMesh = new THREE.Mesh(buildGyroidMesh(24), matGyroid);
     group.add(gyroidMesh);
 
-    // ── Vessel (outer cylinder) – deliberately larger than the gyroid ────────
+    // ── Vessel ──────────────────────────────────────────────────────────────
     const shellGeo = new THREE.CylinderGeometry(VESSEL_RADIUS, VESSEL_RADIUS, VESSEL_LENGTH, 64, 1, true);
     const shellMesh = new THREE.Mesh(shellGeo, matShell);
-    shellMesh.rotation.z = Math.PI / 2;   // align length along X
+    shellMesh.rotation.z = Math.PI / 2;
     group.add(shellMesh);
 
-    // End caps
     const capGeo = new THREE.CircleGeometry(VESSEL_RADIUS, 64);
     const cap1 = new THREE.Mesh(capGeo, matShell.clone());
-    cap1.position.x =  VESSEL_LENGTH * 0.5;
-    cap1.rotation.y =  Math.PI / 2;
-    group.add(cap1);
+    cap1.position.x = VESSEL_LENGTH * 0.5; cap1.rotation.y = Math.PI / 2; group.add(cap1);
     const cap2 = new THREE.Mesh(capGeo, matShell.clone());
-    cap2.position.x = -VESSEL_LENGTH * 0.5;
-    cap2.rotation.y = -Math.PI / 2;
-    group.add(cap2);
+    cap2.position.x = -VESSEL_LENGTH * 0.5; cap2.rotation.y = -Math.PI / 2; group.add(cap2);
 
-    // Edge lines for technical look
-    function addEdges(mesh, opacity = 0.55) {
+    function addEdges(mesh, opacity = 0.5) {
       const edges = new THREE.EdgesGeometry(mesh.geometry, 22);
-      const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({
-        color: 0xffffff, transparent: true, opacity
-      }));
-      line.position.copy(mesh.position);
-      line.rotation.copy(mesh.rotation);
-      group.add(line);
-      return line;
+      const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity }));
+      line.position.copy(mesh.position); line.rotation.copy(mesh.rotation);
+      group.add(line); return line;
     }
-    const shellEdges = addEdges(shellMesh, 0.5);
+    const shellEdges = addEdges(shellMesh, 0.45);
 
-    // Sensor docking rings (on the vessel surface)
-    const ringGeo = new THREE.TorusGeometry(0.52, 0.032, 10, 48);
-    const dockMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.45 });
-    const dock1 = new THREE.Mesh(ringGeo, dockMat);
-    dock1.position.set(0, VESSEL_RADIUS - 0.15, 0);
-    dock1.rotation.x = Math.PI / 2;
-    group.add(dock1);
-    const dock2 = new THREE.Mesh(ringGeo, dockMat);
-    dock2.position.set(0, -(VESSEL_RADIUS - 0.15), 0);
-    dock2.rotation.x = Math.PI / 2;
-    group.add(dock2);
+    // ── INLET / OUTLET markers + arrows ─────────────────────────────────────
+    function makeArrow(dir = 1) {
+      const g = new THREE.Group();
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.7, 8), matArrow);
+      shaft.rotation.z = Math.PI / 2;
+      shaft.position.x = dir * 0.35;
+      g.add(shaft);
+      const head = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.32, 10), matArrow);
+      head.rotation.z = dir > 0 ? -Math.PI / 2 : Math.PI / 2;
+      head.position.x = dir * 0.85;
+      g.add(head);
+      return g;
+    }
 
-    // Subtle internal particles (kept inside vessel)
-    const pCount = 160;
+    const inletMarker = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), matMarker);
+    inletMarker.position.set(-VESSEL_LENGTH * 0.5 - 0.15, 0, 0);
+    group.add(inletMarker);
+    const inletArrow = makeArrow(-1);
+    inletArrow.position.set(-VESSEL_LENGTH * 0.5 - 1.1, 0, 0);
+    group.add(inletArrow);
+
+    const outletMarker = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), matMarker);
+    outletMarker.position.set(VESSEL_LENGTH * 0.5 + 0.15, 0, 0);
+    group.add(outletMarker);
+    const outletArrow = makeArrow(1);
+    outletArrow.position.set(VESSEL_LENGTH * 0.5 + 1.1, 0, 0);
+    group.add(outletArrow);
+
+    // ── Sterile Sensor Docking (more detailed) ──────────────────────────────
+    const sensorGroup = new THREE.Group();
+    // Docking port ring on vessel wall
+    const portRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.42, 0.05, 12, 32),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.5 })
+    );
+    portRing.position.set(0, VESSEL_RADIUS - 0.08, 0);
+    portRing.rotation.x = Math.PI / 2;
+    sensorGroup.add(portRing);
+
+    // Septum / cartridge body
+    const cartridge = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.28, 0.32, 0.55, 16),
+      new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.4, metalness: 0.2 })
+    );
+    cartridge.position.set(0, VESSEL_RADIUS + 0.35, 0);
+    sensorGroup.add(cartridge);
+
+    // Optical window (small disc)
+    const optic = new THREE.Mesh(
+      new THREE.CircleGeometry(0.14, 16),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5, transparent: true, opacity: 0.9 })
+    );
+    optic.position.set(0, VESSEL_RADIUS + 0.63, 0);
+    optic.rotation.x = -Math.PI / 2;
+    sensorGroup.add(optic);
+
+    // Second dock (bottom)
+    const sensorGroup2 = sensorGroup.clone();
+    sensorGroup2.rotation.z = Math.PI;
+    group.add(sensorGroup);
+    group.add(sensorGroup2);
+
+    // ── Animated flow particles (inlet → outlet) ────────────────────────────
+    const FLOW_COUNT = 120;
+    const flowGeo = new THREE.BufferGeometry();
+    const flowPos = new Float32Array(FLOW_COUNT * 3);
+    const flowVel = new Float32Array(FLOW_COUNT);
+    for (let i = 0; i < FLOW_COUNT; i++) {
+      flowPos[i*3]   = -VESSEL_LENGTH * 0.5 + Math.random() * VESSEL_LENGTH;
+      const ang = Math.random() * Math.PI * 2;
+      const r = Math.random() * GYROID_MAX_R * 0.85;
+      flowPos[i*3+1] = Math.cos(ang) * r;
+      flowPos[i*3+2] = Math.sin(ang) * r;
+      flowVel[i] = 0.8 + Math.random() * 1.4;
+    }
+    flowGeo.setAttribute('position', new THREE.BufferAttribute(flowPos, 3));
+    const flowParticles = new THREE.Points(flowGeo, new THREE.PointsMaterial({
+      color: 0xffffff, size: 0.045, transparent: true, opacity: 0.7, depthWrite: false
+    }));
+    group.add(flowParticles);
+
+    // Ambient particles
+    const pCount = 80;
     const pGeo = new THREE.BufferGeometry();
     const pPos = new Float32Array(pCount * 3);
     for (let i = 0; i < pCount; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const r = Math.random() * (GYROID_MAX_R * 0.9);
-      pPos[i*3]   = (Math.random() - 0.5) * (VESSEL_LENGTH - 1.0);
-      pPos[i*3+1] = Math.cos(angle) * r;
-      pPos[i*3+2] = Math.sin(angle) * r;
+      const ang = Math.random() * Math.PI * 2;
+      const r = Math.random() * GYROID_MAX_R * 0.9;
+      pPos[i*3] = (Math.random()-0.5)*(VESSEL_LENGTH-1);
+      pPos[i*3+1] = Math.cos(ang)*r;
+      pPos[i*3+2] = Math.sin(ang)*r;
     }
     pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
     const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
-      color: 0xffffff, size: 0.02, transparent: true, opacity: 0.25, depthWrite: false
+      color: 0xffffff, size: 0.018, transparent: true, opacity: 0.22, depthWrite: false
     }));
     group.add(particles);
 
-    // Ground grid
+    // Ground
     const grid = new THREE.GridHelper(22, 44, 0x2a2a2a, 0x151515);
-    grid.position.y = -4.4;
-    scene.add(grid);
+    grid.position.y = -4.4; scene.add(grid);
 
-    // ── Mode switching ──
+    // ── HTML label projection ───────────────────────────────────────────────
+    const labelInlet  = document.getElementById('label-inlet');
+    const labelOutlet = document.getElementById('label-outlet');
+    const labelSensor = document.getElementById('label-sensor');
+
+    function projectLabel(el, worldPos) {
+      const v = worldPos.clone().project(camera);
+      if (v.z > 1) { el.style.display = 'none'; return; }
+      const x = (v.x * 0.5 + 0.5) * innerWidth;
+      const y = (-v.y * 0.5 + 0.5) * innerHeight;
+      el.style.display = 'block';
+      el.style.left = x + 'px';
+      el.style.top  = y + 'px';
+    }
+
+    // ── Modes ───────────────────────────────────────────────────────────────
     let mode = 'solid';
     function setMode(next) {
       mode = next;
       document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-
       if (mode === 'solid') {
-        gyroidMesh.material = matGyroid;
-        gyroidMesh.visible = true;
-        shellMesh.visible = true; shellMesh.material = matShell; shellMesh.material.opacity = 0.82;
-        cap1.visible = true; cap2.visible = true;
-        shellEdges.visible = true; shellEdges.material.opacity = 0.5;
+        gyroidMesh.material = matGyroid; gyroidMesh.visible = true;
+        shellMesh.visible = true; shellMesh.material = matShell; shellMesh.material.opacity = 0.78;
+        cap1.visible = true; cap2.visible = true; shellEdges.visible = true; shellEdges.material.opacity = 0.45;
+        sensorGroup.visible = true; sensorGroup2.visible = true;
       } else if (mode === 'wire') {
-        gyroidMesh.material = matGyroidWire;
-        gyroidMesh.visible = true;
-        shellMesh.visible = false;
-        cap1.visible = false; cap2.visible = false;
+        gyroidMesh.material = matGyroidWire; gyroidMesh.visible = true;
+        shellMesh.visible = false; cap1.visible = false; cap2.visible = false;
         shellEdges.visible = true; shellEdges.material.opacity = 0.9;
+        sensorGroup.visible = true; sensorGroup2.visible = true;
       } else if (mode === 'xray') {
-        gyroidMesh.material = matGyroid;
-        gyroidMesh.visible = true;
+        gyroidMesh.material = matGyroid; gyroidMesh.visible = true;
         shellMesh.material = matXray; shellMesh.visible = true;
-        cap1.visible = true; cap2.visible = true;
-        shellEdges.visible = true; shellEdges.material.opacity = 0.35;
+        cap1.visible = true; cap2.visible = true; shellEdges.visible = true; shellEdges.material.opacity = 0.3;
+        sensorGroup.visible = true; sensorGroup2.visible = true;
       } else if (mode === 'core') {
-        gyroidMesh.material = matGyroid;
-        gyroidMesh.visible = true;
-        shellMesh.visible = false;
-        cap1.visible = false; cap2.visible = false;
-        shellEdges.visible = false;
+        gyroidMesh.material = matGyroid; gyroidMesh.visible = true;
+        shellMesh.visible = false; cap1.visible = false; cap2.visible = false; shellEdges.visible = false;
+        sensorGroup.visible = false; sensorGroup2.visible = false;
       }
     }
-
     document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
     addEventListener('keydown', e => {
-      if (e.key === '1') setMode('solid');
-      if (e.key === '2') setMode('wire');
-      if (e.key === '3') setMode('xray');
-      if (e.key === '4') setMode('core');
+      if (e.key==='1') setMode('solid');
+      if (e.key==='2') setMode('wire');
+      if (e.key==='3') setMode('xray');
+      if (e.key==='4') setMode('core');
     });
 
-    const m1 = document.querySelector('#m1'), m2 = document.querySelector('#m2'), m3 = document.querySelector('#m3');
-    const b1 = document.querySelector('#b1'), b2 = document.querySelector('#b2'), b3 = document.querySelector('#b3');
+    const m1 = document.querySelector('#m1'), m2 = document.querySelector('#m2');
+    const m3 = document.querySelector('#m3'), m4 = document.querySelector('#m4');
+    const b1 = document.querySelector('#b1'), b2 = document.querySelector('#b2');
+    const b3 = document.querySelector('#b3'), b4 = document.querySelector('#b4');
 
     function fit() {
       camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(innerWidth, innerHeight);
-      group.scale.setScalar(innerWidth < 700 ? 0.68 : 1);
+      group.scale.setScalar(innerWidth < 700 ? 0.65 : 1);
     }
-    fit();
-    addEventListener('resize', fit);
+    fit(); addEventListener('resize', fit);
 
+    // ── Animation ───────────────────────────────────────────────────────────
     function animate(ms) {
       const t = ms * 0.001;
-      group.rotation.y = t * 0.065;
-      particles.rotation.y = -t * 0.02;
+      group.rotation.y = t * 0.055;
 
-      const a = 95.7 + Math.sin(t * 0.65) * 1.0;
-      const b = 88.4 + Math.cos(t * 0.48) * 0.9;
-      const c = 98.8 + Math.sin(t * 0.55) * 0.3;
-      m1.textContent = a.toFixed(1) + '%';
-      m2.textContent = b.toFixed(1) + '%';
-      m3.textContent = c.toFixed(1) + '%';
-      b1.style.transform = `scaleX(${a/100})`;
-      b2.style.transform = `scaleX(${b/100})`;
-      b3.style.transform = `scaleX(${c/100})`;
+      // Pulse markers
+      const pulse = 1 + Math.sin(t * 3.2) * 0.18;
+      inletMarker.scale.setScalar(pulse);
+      outletMarker.scale.setScalar(pulse);
+      optic.material.emissiveIntensity = 0.35 + Math.sin(t * 2.8) * 0.35;
+
+      // Product-formation enhancement: gyroid emissive breathes
+      matGyroid.emissiveIntensity = 0.04 + Math.max(0, Math.sin(t * 1.4)) * 0.12;
+
+      // Flow particles move inlet → outlet
+      const pos = flowGeo.attributes.position.array;
+      for (let i = 0; i < FLOW_COUNT; i++) {
+        pos[i*3] += flowVel[i] * 0.018;
+        if (pos[i*3] > VESSEL_LENGTH * 0.5 + 0.3) {
+          pos[i*3] = -VESSEL_LENGTH * 0.5 - 0.2;
+          const ang = Math.random() * Math.PI * 2;
+          const r = Math.random() * GYROID_MAX_R * 0.85;
+          pos[i*3+1] = Math.cos(ang) * r;
+          pos[i*3+2] = Math.sin(ang) * r;
+        }
+      }
+      flowGeo.attributes.position.needsUpdate = true;
+
+      particles.rotation.y = -t * 0.015;
+
+      // Project labels
+      const worldIn  = inletMarker.getWorldPosition(new THREE.Vector3());
+      const worldOut = outletMarker.getWorldPosition(new THREE.Vector3());
+      const worldSen = portRing.getWorldPosition(new THREE.Vector3());
+      projectLabel(labelInlet,  worldIn);
+      projectLabel(labelOutlet, worldOut);
+      projectLabel(labelSensor, worldSen);
+
+      // Metrics
+      const a = 95.7 + Math.sin(t*0.65)*1.0;
+      const b = 88.4 + Math.cos(t*0.48)*0.9;
+      const c = 98.8 + Math.sin(t*0.55)*0.3;
+      const d = 32 + Math.sin(t*0.4)*4;
+      m1.textContent = a.toFixed(1)+'%'; m2.textContent = b.toFixed(1)+'%';
+      m3.textContent = c.toFixed(1)+'%'; m4.textContent = '+'+d.toFixed(0)+'%';
+      b1.style.transform = `scaleX(${a/100})`; b2.style.transform = `scaleX(${b/100})`;
+      b3.style.transform = `scaleX(${c/100})`; b4.style.transform = `scaleX(${d/45})`;
 
       controls.update();
       renderer.render(scene, camera);
