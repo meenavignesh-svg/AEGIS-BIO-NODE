@@ -5,365 +5,479 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AEGIS BioNode</title>
 <style>
-html,body{margin:0;height:100%;overflow:hidden;background:#0a0a0a;color:#eee;font-family:monospace}
-#c{position:fixed;inset:0;width:100%;height:100%;display:block}
-.ui{position:fixed;z-index:10;inset:0;pointer-events:none}
-.panel{position:absolute;top:0;bottom:0;width:270px;background:rgba(10,10,10,.92);border:1px solid rgba(255,255,255,.15);padding:14px;pointer-events:auto;overflow-y:auto;font-size:12px;line-height:1.45}
+*{margin:0;box-sizing:border-box}
+html,body{height:100%;background:#080808;color:#eee;font-family:ui-monospace,Menlo,Consolas,monospace;overflow:hidden}
+canvas{display:block;width:100%;height:100%}
+#ui{position:fixed;inset:0;pointer-events:none;z-index:5}
+.panel{position:absolute;top:0;bottom:0;width:260px;padding:16px;background:rgba(8,8,8,.93);border:1px solid rgba(255,255,255,.12);pointer-events:auto;overflow-y:auto;font-size:12px;line-height:1.5}
 .left{left:0}.right{right:0}
-h1{font-size:17px;font-weight:500;margin:8px 0}.muted{color:#999;font-size:11px}
-button{display:block;width:100%;margin:4px 0;padding:8px;background:transparent;border:1px solid #444;color:#eee;font:inherit;cursor:pointer}
-button:hover,button.on{background:#fff;color:#000}
-.metric{border:1px solid #333;padding:8px;margin:6px 0}.metric b{float:right}
-.title{position:absolute;top:14px;left:50%;transform:translateX(-50%);text-align:center}
-.title div{font-size:10px;letter-spacing:2px;color:#888}.title h2{margin:4px 0 0;font-size:26px;font-weight:400}
-.foot{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:10px;color:#666;letter-spacing:1px}
-.zone{position:absolute;z-index:15;pointer-events:none;font-size:10px;letter-spacing:.06em;color:#fff;background:rgba(0,0,0,.88);border:1px solid rgba(255,255,255,.45);padding:3px 8px;border-radius:2px;white-space:nowrap;transform:translate(-50%,-130%)}
-.zone::after{content:'';position:absolute;left:50%;bottom:-4px;width:7px;height:7px;background:rgba(0,0,0,.88);border-right:1px solid rgba(255,255,255,.45);border-bottom:1px solid rgba(255,255,255,.45);transform:translateX(-50%) rotate(45deg)}
-.flow-box{border:1px solid #333;padding:10px;margin:8px 0;font-size:11px;color:#bbb;line-height:1.5}
-.flow-box b{color:#fff}
-@media(max-width:800px){.panel{display:none}}
+.brand{font-size:10px;letter-spacing:.15em;color:#888;text-transform:uppercase}
+.brand strong{display:block;color:#fff;font-size:14px;margin-top:4px;letter-spacing:.02em}
+h1{font-size:18px;font-weight:500;margin:12px 0 8px}
+.lead{color:#999;font-size:11px;margin-bottom:14px}
+.box{border:1px solid #2a2a2a;padding:10px;margin:8px 0;border-radius:2px}
+.box h3{font-size:10px;letter-spacing:.12em;color:#888;margin-bottom:6px;text-transform:uppercase}
+.box p,.box li{color:#bbb;font-size:11px}
+.box b{color:#fff}
+ul{padding-left:14px;margin:4px 0}
+button{width:100%;margin:3px 0;padding:8px;border:1px solid #333;background:transparent;color:#eee;font:inherit;font-size:11px;cursor:pointer;border-radius:2px}
+button:hover,button.on{background:#fff;color:#000;border-color:#fff}
+.metric{display:flex;justify-content:space-between;border:1px solid #2a2a2a;padding:8px 10px;margin:5px 0;font-size:11px;color:#aaa}
+.metric b{color:#fff;font-size:13px}
+#title{position:absolute;top:18px;left:50%;transform:translateX(-50%);text-align:center}
+#title .sub{font-size:10px;letter-spacing:.2em;color:#777}
+#title h2{font-size:28px;font-weight:400;margin-top:4px}
+#foot{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:10px;color:#555;letter-spacing:.1em}
+.lbl{position:absolute;z-index:20;pointer-events:none;font-size:10px;letter-spacing:.05em;color:#fff;background:rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.4);padding:3px 8px;border-radius:2px;white-space:nowrap;transform:translate(-50%,-120%)}
+@media(max-width:820px){.panel{display:none}}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="z-inlet" class="zone" style="display:none">CENTRAL INLET</div>
-<div id="z-manifold" class="zone" style="display:none">BRANCHED MANIFOLD</div>
-<div id="z1" class="zone" style="display:none">ZONE 1 + SENSOR</div>
-<div id="z2" class="zone" style="display:none">ZONE 2 + SENSOR</div>
-<div id="z3" class="zone" style="display:none">ZONE 3 + SENSOR</div>
-<div id="z4" class="zone" style="display:none">ZONE 4 + SENSOR</div>
-<div id="z-outman" class="zone" style="display:none">OUTLET MANIFOLD</div>
-<div id="z-outlet" class="zone" style="display:none">OUTLET</div>
-<div id="z-core" class="zone" style="display:none">GYROID CORE</div>
-<div class="ui">
-  <div class="title"><div>CYLINDRICAL GYROID · 4-ZONE FLOW · SENSORS</div><h2>AEGIS BioNode</h2></div>
-  <div class="panel left">
-    <div class="muted">AEGIS BIONODE</div>
+
+<div id="l-in" class="lbl" style="display:none">CENTRAL INLET</div>
+<div id="l-man" class="lbl" style="display:none">BRANCH MANIFOLD</div>
+<div id="l-z1" class="lbl" style="display:none">ZONE 1 · SENSOR</div>
+<div id="l-z2" class="lbl" style="display:none">ZONE 2 · SENSOR</div>
+<div id="l-z3" class="lbl" style="display:none">ZONE 3 · SENSOR</div>
+<div id="l-z4" class="lbl" style="display:none">ZONE 4 · SENSOR</div>
+<div id="l-core" class="lbl" style="display:none">GYROID CORE</div>
+<div id="l-outm" class="lbl" style="display:none">OUTLET MANIFOLD</div>
+<div id="l-out" class="lbl" style="display:none">OUTLET</div>
+
+<div id="ui">
+  <div id="title"><div class="sub">GYROID PERFUSION BIOREACTOR</div><h2>AEGIS BioNode</h2></div>
+  <aside class="panel left">
+    <div class="brand">AEGIS BioNode<strong>Modular Perfusion Platform</strong></div>
     <h1>Living tissue engine</h1>
-    <p class="muted">Cylindrical vessel with continuous gyroid lattice. Flow path below is internal logic — not the physical shape.</p>
-    <div class="flow-box">
-      <b>Central inlet</b><br>
-      &nbsp;&nbsp;│<br>
-      <b>Branched manifold</b><br>
-      &nbsp;/&nbsp;&nbsp;|&nbsp;&nbsp;\&nbsp;&nbsp;\<br>
-      Z1&nbsp;Z2&nbsp;Z3&nbsp;Z4<br>
-      &nbsp;↓&nbsp;&nbsp;↓&nbsp;&nbsp;↓&nbsp;&nbsp;↓<br>
-      sensors on each<br>
-      &nbsp;\&nbsp;&nbsp;|&nbsp;&nbsp;/&nbsp;&nbsp;/<br>
-      <b>Outlet manifold</b><br>
-      &nbsp;&nbsp;│<br>
-      <b>Outlet</b>
+    <p class="lead">Cylindrical vessel · continuous Schoen gyroid core · four sensed flow zones · low-shear perfusion</p>
+    <div class="box">
+      <h3>Flow path</h3>
+      <p><b>Central inlet</b><br>↓<br><b>Branch manifold</b><br>↙ &nbsp;↓ &nbsp;↘ &nbsp;↘<br>Z1 &nbsp;Z2 &nbsp;Z3 &nbsp;Z4<br>↓ &nbsp;↓ &nbsp;↓ &nbsp;↓<br>sensors<br>↘ &nbsp;↓ &nbsp;↙ &nbsp;↙<br><b>Outlet manifold</b><br>↓<br><b>Outlet</b></p>
     </div>
-    <button class="on" id="b1">Solid</button>
-    <button id="b2">Wire</button>
-    <button id="b3">X-Ray</button>
-    <button id="b4">Core</button>
-  </div>
-  <div class="panel right">
-    <div class="metric">Perfusion <b id="m1">97%</b></div>
-    <div class="metric">Shear reduction <b id="m2">89%</b></div>
-    <div class="metric">Product gain <b id="m3">+35%</b></div>
-    <div class="metric">Zone accuracy <b id="m4">99%</b></div>
-    <p class="muted" style="margin-top:12px">Media enters central inlet, distributes into 4 gyroid zones (each sensed), recombines at outlet manifold.</p>
-  </div>
-  <div class="foot">DRAG TO ROTATE · SCROLL TO ZOOM · 1–4 VIEW</div>
+    <div class="box">
+      <h3>View</h3>
+      <button class="on" id="b1">1 · Solid</button>
+      <button id="b2">2 · Wire</button>
+      <button id="b3">3 · X-Ray</button>
+      <button id="b4">4 · Core only</button>
+    </div>
+  </aside>
+  <aside class="panel right">
+    <div class="metric"><span>Perfusion</span><b id="m1">97%</b></div>
+    <div class="metric"><span>Shear cut</span><b id="m2">89%</b></div>
+    <div class="metric"><span>Product gain</span><b id="m3">+35%</b></div>
+    <div class="metric"><span>Zone accuracy</span><b id="m4">99%</b></div>
+    <div class="box" style="margin-top:12px">
+      <h3>Parts</h3>
+      <ul>
+        <li><b>Vessel</b> — outer housing</li>
+        <li><b>Gyroid core</b> — TPMS lattice</li>
+        <li><b>4 zones</b> — each with sensor</li>
+        <li><b>Inlet / Outlet</b> — media path</li>
+      </ul>
+    </div>
+  </aside>
+  <div id="foot">DRAG · SCROLL · KEYS 1–4</div>
 </div>
-<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.165.0/build/three.module.js"}}</script>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js"}}</script>
 <script type="module">
 import * as THREE from "three";
-import { OrbitControls } from "https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/controls/OrbitControls.js";
 
+// ── Renderer ──────────────────────────────────────────────
 const canvas = document.getElementById("c");
-const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x0a0a0a);
+renderer.setClearColor(0x080808);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(9, 5, 11);
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 80);
+camera.position.set(10, 4.5, 10);
 
-const controls = new OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
+controls.dampingFactor = 0.06;
 controls.autoRotate = true;
-controls.autoRotateSpeed = 0.22;
+controls.autoRotateSpeed = 0.35;
 controls.enablePan = false;
 controls.minDistance = 5;
-controls.maxDistance = 24;
+controls.maxDistance = 22;
 controls.target.set(0, 0, 0);
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-const dl = new THREE.DirectionalLight(0xffffff, 0.95);
-dl.position.set(5, 9, 7); scene.add(dl);
-const dl2 = new THREE.DirectionalLight(0xffffff, 0.3);
-dl2.position.set(-6, 2, -4); scene.add(dl2);
+const key = new THREE.DirectionalLight(0xffffff, 1.0);
+key.position.set(6, 10, 8);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 0.3);
+fill.position.set(-5, 2, -4);
+scene.add(fill);
 
 const root = new THREE.Group();
 scene.add(root);
 
-const R = 3.0, L = 6.8, GR = 2.45;
+// ── Constants ─────────────────────────────────────────────
+const VR = 3.0;   // vessel radius
+const VL = 7.0;   // vessel length (along X)
+const GR = 2.5;   // gyroid max radius
 
-const matShell = new THREE.MeshStandardMaterial({ color: 0x222222, transparent: true, opacity: 0.42, side: THREE.DoubleSide, roughness: 0.5 });
-const matXray = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.07, side: THREE.DoubleSide, depthWrite: false });
-const matMark = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.45, roughness: 0.3 });
-const matGrey = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.35, metalness: 0.3 });
-const matGyro = new THREE.LineBasicMaterial({ color: 0xe8e8e8, transparent: true, opacity: 0.88 });
-const matGyroWire = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 });
+// ── Materials ─────────────────────────────────────────────
+const matShell = new THREE.MeshStandardMaterial({
+  color: 0x1a1a1a, transparent: true, opacity: 0.4,
+  side: THREE.DoubleSide, roughness: 0.55, metalness: 0.1
+});
+const matXray = new THREE.MeshBasicMaterial({
+  color: 0xffffff, transparent: true, opacity: 0.06,
+  side: THREE.DoubleSide, depthWrite: false
+});
+const matWhite = new THREE.MeshStandardMaterial({
+  color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.4, roughness: 0.3
+});
+const matGrey = new THREE.MeshStandardMaterial({
+  color: 0xc8c8c8, roughness: 0.35, metalness: 0.3
+});
+const matLine = new THREE.LineBasicMaterial({ color: 0xf0f0f0, transparent: true, opacity: 0.9 });
+const matLineDim = new THREE.LineBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.7 });
 
-// Vessel cylinder
-const shell = new THREE.Mesh(new THREE.CylinderGeometry(R, R, L, 48, 1, true), matShell);
+// ── Vessel ────────────────────────────────────────────────
+const shell = new THREE.Mesh(
+  new THREE.CylinderGeometry(VR, VR, VL, 64, 1, true),
+  matShell
+);
 shell.rotation.z = Math.PI / 2;
 root.add(shell);
-const capGeo = new THREE.CircleGeometry(R, 48);
-const capL = new THREE.Mesh(capGeo, matShell.clone());
-capL.position.x = -L / 2; capL.rotation.y = -Math.PI / 2; root.add(capL);
-const capR = new THREE.Mesh(capGeo, matShell.clone());
-capR.position.x = L / 2; capR.rotation.y = Math.PI / 2; root.add(capR);
 
-// True gyroid isosurface lines
-function G(x, y, z) {
+const capGeo = new THREE.CircleGeometry(VR, 64);
+const capL = new THREE.Mesh(capGeo, matShell.clone());
+capL.position.x = -VL / 2;
+capL.rotation.y = -Math.PI / 2;
+root.add(capL);
+const capR = new THREE.Mesh(capGeo, matShell.clone());
+capR.position.x = VL / 2;
+capR.rotation.y = Math.PI / 2;
+root.add(capR);
+
+// Edge highlight
+const edge = new THREE.LineSegments(
+  new THREE.EdgesGeometry(shell.geometry, 20),
+  new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 })
+);
+edge.rotation.z = Math.PI / 2;
+root.add(edge);
+
+// ── Gyroid lattice (true isosurface curves) ───────────────
+function gyroid(x, y, z) {
   return Math.sin(x) * Math.cos(y) + Math.sin(y) * Math.cos(z) + Math.sin(z) * Math.cos(x);
 }
-function buildGyroid() {
-  const freq = 2.0, res = 20;
+
+function buildGyroidGeo() {
+  const res = 18;
+  const freq = 2.1;
   const domain = Math.PI * 2 * freq;
   const step = domain / (res - 1);
   const half = (res - 1) / 2;
-  function toW(fx, fy, fz) {
-    let px = (fx / domain) * L * 0.88;
+  const field = new Float32Array(res * res * res);
+
+  for (let i = 0; i < res; i++) {
+    for (let j = 0; j < res; j++) {
+      for (let k = 0; k < res; k++) {
+        field[i * res * res + j * res + k] = gyroid(
+          (i - half) * step,
+          (j - half) * step,
+          (k - half) * step
+        );
+      }
+    }
+  }
+
+  const edgeIdx = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  const corner = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
+  const verts = [];
+
+  function get(i, j, k) {
+    return field[i * res * res + j * res + k];
+  }
+
+  function world(fx, fy, fz) {
+    let px = (fx / domain) * VL * 0.9;
     let py = (fy / domain) * GR * 2;
     let pz = (fz / domain) * GR * 2;
     const r = Math.sqrt(py * py + pz * pz);
-    if (r > GR) { py *= GR / r; pz *= GR / r; }
-    const mx = L * 0.5 - 0.3;
-    if (Math.abs(px) > mx) px = Math.sign(px) * mx;
+    if (r > GR) {
+      py = (py / r) * GR;
+      pz = (pz / r) * GR;
+    }
+    const mx = VL * 0.5 - 0.35;
+    if (px > mx) px = mx;
+    if (px < -mx) px = -mx;
     return [px, py, pz];
   }
-  const field = new Float32Array(res * res * res);
-  for (let i = 0; i < res; i++)
-    for (let j = 0; j < res; j++)
-      for (let k = 0; k < res; k++)
-        field[i * res * res + j * res + k] = G((i - half) * step, (j - half) * step, (k - half) * step);
-  const edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
-  const corn = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
-  const pos = [];
-  function val(i, j, k) { return field[i * res * res + j * res + k]; }
-  for (let i = 0; i < res - 1; i++)
-    for (let j = 0; j < res - 1; j++)
+
+  for (let i = 0; i < res - 1; i++) {
+    for (let j = 0; j < res - 1; j++) {
       for (let k = 0; k < res - 1; k++) {
         const pts = [];
         for (let e = 0; e < 12; e++) {
-          const a = corn[edges[e][0]], b = corn[edges[e][1]];
-          const va = val(i + a[0], j + a[1], k + a[2]);
-          const vb = val(i + b[0], j + b[1], k + b[2]);
+          const a = corner[edgeIdx[e][0]];
+          const b = corner[edgeIdx[e][1]];
+          const va = get(i + a[0], j + a[1], k + a[2]);
+          const vb = get(i + b[0], j + b[1], k + b[2]);
           if (va * vb >= 0) continue;
           const t = va / (va - vb);
-          pts.push(toW(
+          pts.push(world(
             (i + a[0] + (b[0] - a[0]) * t - half) * step,
             (j + a[1] + (b[1] - a[1]) * t - half) * step,
             (k + a[2] + (b[2] - a[2]) * t - half) * step
           ));
         }
-        for (let a = 0; a < pts.length; a++)
+        for (let a = 0; a < pts.length; a++) {
           for (let b = a + 1; b < pts.length; b++) {
-            const dx = pts[a][0] - pts[b][0], dy = pts[a][1] - pts[b][1], dz = pts[a][2] - pts[b][2];
+            const dx = pts[a][0] - pts[b][0];
+            const dy = pts[a][1] - pts[b][1];
+            const dz = pts[a][2] - pts[b][2];
             const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            if (d > 0.05 && d < 0.55) {
-              pos.push(pts[a][0], pts[a][1], pts[a][2], pts[b][0], pts[b][1], pts[b][2]);
+            if (d > 0.06 && d < 0.5) {
+              verts.push(pts[a][0], pts[a][1], pts[a][2]);
+              verts.push(pts[b][0], pts[b][1], pts[b][2]);
             }
           }
+        }
       }
+    }
+  }
+
   const geo = new THREE.BufferGeometry();
-  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
   return geo;
 }
-const gyroLines = new THREE.LineSegments(buildGyroid(), matGyro);
-root.add(gyroLines);
 
-// Inlet / outlet markers
-const inlet = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), matMark);
-inlet.position.set(-L / 2 - 0.25, 0, 0); root.add(inlet);
-const outlet = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), matMark);
-outlet.position.set(L / 2 + 0.25, 0, 0); root.add(outlet);
+const gyroMesh = new THREE.LineSegments(buildGyroidGeo(), matLine);
+root.add(gyroMesh);
 
-function arrow(dir) {
+// ── Inlet / Outlet ────────────────────────────────────────
+const inlet = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), matWhite);
+inlet.position.set(-VL / 2 - 0.3, 0, 0);
+root.add(inlet);
+
+const outlet = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 16), matWhite);
+outlet.position.set(VL / 2 + 0.3, 0, 0);
+root.add(outlet);
+
+function makeArrow(dir) {
   const g = new THREE.Group();
-  const s = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.55, 8), matMark);
-  s.rotation.z = Math.PI / 2; s.position.x = dir * 0.25; g.add(s);
-  const h = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.26, 8), matMark);
-  h.rotation.z = dir > 0 ? -Math.PI / 2 : Math.PI / 2; h.position.x = dir * 0.65; g.add(h);
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.55, 8), matWhite);
+  shaft.rotation.z = Math.PI / 2;
+  shaft.position.x = dir * 0.28;
+  g.add(shaft);
+  const head = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.28, 10), matWhite);
+  head.rotation.z = dir > 0 ? -Math.PI / 2 : Math.PI / 2;
+  head.position.x = dir * 0.7;
+  g.add(head);
   return g;
 }
-const aIn = arrow(-1); aIn.position.set(-L / 2 - 1.05, 0, 0); root.add(aIn);
-const aOut = arrow(1); aOut.position.set(L / 2 + 1.05, 0, 0); root.add(aOut);
+const arrIn = makeArrow(-1);
+arrIn.position.set(-VL / 2 - 1.15, 0, 0);
+root.add(arrIn);
+const arrOut = makeArrow(1);
+arrOut.position.set(VL / 2 + 1.15, 0, 0);
+root.add(arrOut);
 
-// 4 zone sensors at quarter positions along length (internal flow zones)
-// Zone centers along X: -2.0, -0.7, 0.7, 2.0
-const zoneXs = [-2.0, -0.7, 0.7, 2.0];
-const zoneIds = ["z1", "z2", "z3", "z4"];
+// ── 4 zone sensors ────────────────────────────────────────
+const zoneX = [-2.1, -0.7, 0.7, 2.1];
+const zoneLbl = ["l-z1", "l-z2", "l-z3", "l-z4"];
 const sensors = [];
+
 for (let i = 0; i < 4; i++) {
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.4, 12), matGrey);
-  body.position.y = 0.28; g.add(body);
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.03, 8, 18), matMark);
-  ring.rotation.x = Math.PI / 2; ring.position.y = 0.06; g.add(ring);
+
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.38, 12), matGrey);
+  body.position.y = 0.26;
+  g.add(body);
+
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.028, 8, 20), matWhite);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.05;
+  g.add(ring);
+
   for (let p = 0; p < 8; p++) {
-    const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.012, 0.14, 4), matMark);
-    pin.position.set(-0.055 + (p % 4) * 0.037, 0.52, -0.03 + Math.floor(p / 4) * 0.06);
+    const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.01, 0.13, 5), matWhite);
+    pin.position.set(
+      -0.05 + (p % 4) * 0.033,
+      0.5,
+      -0.025 + Math.floor(p / 4) * 0.05
+    );
     g.add(pin);
   }
-  // Place sensors around vessel at each zone X
-  const ang = (i / 4) * Math.PI * 2 + 0.3;
-  const rr = R - 0.05;
-  g.position.set(zoneXs[i], Math.cos(ang) * rr, Math.sin(ang) * rr);
-  g.lookAt(zoneXs[i], Math.cos(ang) * rr * 2, Math.sin(ang) * rr * 2);
+
+  const ang = (i / 4) * Math.PI * 2 + 0.4;
+  const rr = VR - 0.04;
+  g.position.set(zoneX[i], Math.cos(ang) * rr, Math.sin(ang) * rr);
+  g.lookAt(zoneX[i], Math.cos(ang) * rr * 2.5, Math.sin(ang) * rr * 2.5);
   g.rotateX(Math.PI / 2);
   root.add(g);
-  sensors.push({ mesh: g, id: zoneIds[i], x: zoneXs[i] });
+  sensors.push(g);
 }
 
-// Flow particles: inlet → spread into 4 zone paths → outlet
-const PN = 200;
-const pPos = new Float32Array(PN * 3);
-const pData = [];
-for (let i = 0; i < PN; i++) {
-  pData.push({
+// ── Flow particles (inlet → 4 zones → outlet) ─────────────
+const N = 180;
+const fPos = new Float32Array(N * 3);
+const fData = [];
+for (let i = 0; i < N; i++) {
+  fData.push({
     t: Math.random(),
-    speed: 0.25 + Math.random() * 0.45,
+    spd: 0.3 + Math.random() * 0.5,
     zone: i % 4,
-    phase: Math.random() * Math.PI * 2
+    ph: Math.random() * Math.PI * 2
   });
 }
-const pGeo = new THREE.BufferGeometry();
-pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
-root.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
-  color: 0xffffff, size: 0.06, transparent: true, opacity: 0.85,
-  depthWrite: false, sizeAttenuation: true
-})));
+const fGeo = new THREE.BufferGeometry();
+fGeo.setAttribute("position", new THREE.BufferAttribute(fPos, 3));
+const flow = new THREE.Points(fGeo, new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 0.055,
+  transparent: true,
+  opacity: 0.9,
+  depthWrite: false,
+  sizeAttenuation: true
+}));
+root.add(flow);
 
-function flowPos(t, zone, phase) {
-  // 0-0.15: central inlet region
-  // 0.15-0.3: branch into zone (manifold)
-  // 0.3-0.7: through zone gyroid
-  // 0.7-0.85: outlet manifold
-  // 0.85-1: outlet
-  const zOff = ((zone / 4) * Math.PI * 2) + phase * 0.3;
-  const rad = 0.4 + (zone * 0.25) + Math.sin(phase) * 0.3;
-  if (t < 0.12) {
-    const u = t / 0.12;
-    return [-L / 2 + u * 0.8, Math.cos(phase) * 0.15 * u, Math.sin(phase) * 0.15 * u];
-  } else if (t < 0.28) {
-    const u = (t - 0.12) / 0.16;
-    const x = -L / 2 + 0.8 + u * (zoneXs[zone] + L / 2 - 0.8);
-    const r = rad * u;
-    return [x, Math.cos(zOff) * r, Math.sin(zOff) * r];
-  } else if (t < 0.72) {
-    const u = (t - 0.28) / 0.44;
-    const x0 = zoneXs[zone];
-    const x1 = zoneXs[zone] + 0.1;
-    // stay in zone band, weave through gyroid
-    const x = x0 + (x1 - x0) * u + (zoneXs[Math.min(zone + 1, 3)] - x0) * u * 0.5;
-    const r = rad * (0.7 + 0.3 * Math.sin(u * 6 + phase));
-    return [
-      -L / 2 + 1.2 + u * (L - 2.4),
-      Math.cos(zOff + u * 2) * r,
-      Math.sin(zOff + u * 2) * r
-    ];
-  } else if (t < 0.88) {
-    const u = (t - 0.72) / 0.16;
-    const r = rad * (1 - u);
-    return [L / 2 - 1.2 + u * 0.9, Math.cos(zOff) * r, Math.sin(zOff) * r];
-  } else {
-    const u = (t - 0.88) / 0.12;
-    return [L / 2 - 0.3 + u * 0.5, 0, 0];
+function path(t, zone, ph) {
+  const ang = (zone / 4) * Math.PI * 2 + ph * 0.4;
+  const rad = 0.5 + zone * 0.2 + Math.sin(ph) * 0.35;
+
+  // inlet
+  if (t < 0.1) {
+    const u = t / 0.1;
+    return [-VL / 2 + u * 0.9, Math.cos(ph) * 0.1 * u, Math.sin(ph) * 0.1 * u];
   }
+  // branch manifold
+  if (t < 0.25) {
+    const u = (t - 0.1) / 0.15;
+    const r = rad * u;
+    return [-VL / 2 + 0.9 + u * 1.2, Math.cos(ang) * r, Math.sin(ang) * r];
+  }
+  // through zones / gyroid
+  if (t < 0.75) {
+    const u = (t - 0.25) / 0.5;
+    const r = rad * (0.75 + 0.25 * Math.sin(u * 8 + ph));
+    return [
+      -VL / 2 + 2.1 + u * (VL - 4.2),
+      Math.cos(ang + u * 2.5) * r,
+      Math.sin(ang + u * 2.5) * r
+    ];
+  }
+  // outlet manifold
+  if (t < 0.9) {
+    const u = (t - 0.75) / 0.15;
+    const r = rad * (1 - u);
+    return [VL / 2 - 2.1 + u * 1.2, Math.cos(ang) * r, Math.sin(ang) * r];
+  }
+  // outlet
+  const u = (t - 0.9) / 0.1;
+  return [VL / 2 - 0.9 + u * 1.1, 0, 0];
 }
 
-const grid = new THREE.GridHelper(20, 40, 0x222222, 0x141414);
-grid.position.y = -4.3; scene.add(grid);
+// ── Grid ──────────────────────────────────────────────────
+const grid = new THREE.GridHelper(20, 40, 0x1e1e1e, 0x121212);
+grid.position.y = -4.2;
+scene.add(grid);
 
-function proj(id, x, y, z) {
+// ── Labels ────────────────────────────────────────────────
+function label(id, x, y, z) {
   const el = document.getElementById(id);
   if (!el) return;
-  const v = new THREE.Vector3(x, y, z).applyMatrix4(root.matrixWorld).project(camera);
-  if (v.z > 1) { el.style.display = "none"; return; }
+  const v = new THREE.Vector3(x, y, z);
+  v.applyMatrix4(root.matrixWorld);
+  v.project(camera);
+  if (v.z > 1) {
+    el.style.display = "none";
+    return;
+  }
   el.style.display = "block";
-  el.style.left = ((v.x * 0.5 + 0.5) * window.innerWidth) + "px";
-  el.style.top = ((-v.y * 0.5 + 0.5) * window.innerHeight) + "px";
+  el.style.left = (v.x * 0.5 + 0.5) * window.innerWidth + "px";
+  el.style.top = (-v.y * 0.5 + 0.5) * window.innerHeight + "px";
 }
 
-let mode = "solid";
+// ── Modes ─────────────────────────────────────────────────
 function setMode(m) {
-  mode = m;
   document.getElementById("b1").className = m === "solid" ? "on" : "";
   document.getElementById("b2").className = m === "wire" ? "on" : "";
   document.getElementById("b3").className = m === "xray" ? "on" : "";
   document.getElementById("b4").className = m === "core" ? "on" : "";
-  gyroLines.material = m === "wire" ? matGyroWire : matGyro;
+
+  gyroMesh.material = m === "wire" ? matLine : matLineDim;
   shell.visible = m !== "core";
+  edge.visible = m !== "core";
   shell.material = m === "xray" ? matXray : matShell;
-  if (m === "solid") shell.material.opacity = 0.42;
+  if (m === "solid") shell.material.opacity = 0.4;
   capL.visible = m !== "core" && m !== "wire";
   capR.visible = m !== "core" && m !== "wire";
-  sensors.forEach(function (s) { s.mesh.visible = m !== "core"; });
+  for (let i = 0; i < sensors.length; i++) {
+    sensors[i].visible = m !== "core";
+  }
 }
+
 document.getElementById("b1").onclick = function () { setMode("solid"); };
 document.getElementById("b2").onclick = function () { setMode("wire"); };
 document.getElementById("b3").onclick = function () { setMode("xray"); };
 document.getElementById("b4").onclick = function () { setMode("core"); };
+
 window.addEventListener("keydown", function (e) {
   if (e.key === "1") setMode("solid");
   if (e.key === "2") setMode("wire");
   if (e.key === "3") setMode("xray");
   if (e.key === "4") setMode("core");
 });
+
 window.addEventListener("resize", function () {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-function animate(t) {
-  requestAnimationFrame(animate);
-  const sec = t * 0.001;
-  root.rotation.y = sec * 0.045;
+// ── Animate ───────────────────────────────────────────────
+function tick(ms) {
+  requestAnimationFrame(tick);
+  const t = ms * 0.001;
+  root.rotation.y = t * 0.04;
 
-  for (let i = 0; i < PN; i++) {
-    const d = pData[i];
-    d.t += d.speed * 0.0055;
+  for (let i = 0; i < N; i++) {
+    const d = fData[i];
+    d.t += d.spd * 0.005;
     if (d.t > 1) d.t = 0;
-    const p = flowPos(d.t, d.zone, d.phase);
-    pPos[i * 3] = p[0];
-    pPos[i * 3 + 1] = p[1];
-    pPos[i * 3 + 2] = p[2];
+    const p = path(d.t, d.zone, d.ph);
+    fPos[i * 3] = p[0];
+    fPos[i * 3 + 1] = p[1];
+    fPos[i * 3 + 2] = p[2];
   }
-  pGeo.attributes.position.needsUpdate = true;
+  fGeo.attributes.position.needsUpdate = true;
 
-  const pulse = 1 + Math.sin(sec * 3) * 0.12;
+  const pulse = 1 + Math.sin(t * 2.8) * 0.12;
   inlet.scale.setScalar(pulse);
   outlet.scale.setScalar(pulse);
 
-  // Labels: physical vessel + flow logic zones
-  proj("z-inlet", -L / 2 - 0.25, 0.4, 0);
-  proj("z-manifold", -L / 2 + 1.0, 1.2, 0);
-  proj("z1", zoneXs[0], 1.5, 0);
-  proj("z2", zoneXs[1], 1.5, 0);
-  proj("z3", zoneXs[2], 1.5, 0);
-  proj("z4", zoneXs[3], 1.5, 0);
-  proj("z-core", 0, -0.2, 0);
-  proj("z-outman", L / 2 - 1.0, 1.2, 0);
-  proj("z-outlet", L / 2 + 0.25, 0.4, 0);
+  label("l-in", -VL / 2 - 0.3, 0.5, 0);
+  label("l-man", -VL / 2 + 1.2, 1.3, 0);
+  label("l-z1", zoneX[0], 1.6, 0);
+  label("l-z2", zoneX[1], 1.6, 0);
+  label("l-z3", zoneX[2], 1.6, 0);
+  label("l-z4", zoneX[3], 1.6, 0);
+  label("l-core", 0, -0.3, 0);
+  label("l-outm", VL / 2 - 1.2, 1.3, 0);
+  label("l-out", VL / 2 + 0.3, 0.5, 0);
 
-  document.getElementById("m1").textContent = (96 + Math.sin(sec * 0.6)).toFixed(0) + "%";
-  document.getElementById("m2").textContent = (88 + Math.cos(sec * 0.5)).toFixed(0) + "%";
-  document.getElementById("m3").textContent = "+" + (33 + Math.sin(sec * 0.4) * 3).toFixed(0) + "%";
-  document.getElementById("m4").textContent = (98 + Math.sin(sec * 0.4) * 0.5).toFixed(0) + "%";
+  document.getElementById("m1").textContent = (96.5 + Math.sin(t * 0.6)).toFixed(0) + "%";
+  document.getElementById("m2").textContent = (88.5 + Math.cos(t * 0.5)).toFixed(0) + "%";
+  document.getElementById("m3").textContent = "+" + (34 + Math.sin(t * 0.4) * 3).toFixed(0) + "%";
+  document.getElementById("m4").textContent = (98.5 + Math.sin(t * 0.35) * 0.4).toFixed(0) + "%";
 
   controls.update();
   renderer.render(scene, camera);
 }
-requestAnimationFrame(animate);
+requestAnimationFrame(tick);
 </script>
 </body>
 </html>
