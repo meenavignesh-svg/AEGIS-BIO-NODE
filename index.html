@@ -1,42 +1,48 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AEGIS BioNode | Technical 3D Prototype</title>
-  <meta name="description" content="AEGIS BioNode – marching-cubes gyroid with wall thickness, refined multi-pin sensor docks.">
-  <style>
-    :root{color-scheme:dark;--bg:#0a0a0a;--ink:#f0f0f0;--muted:#9a9a9a;--line:rgba(255,255,255,.18);--panel:rgba(12,12,12,.92);font-family:"SF Mono","Roboto Mono",ui-monospace,Menlo,Consolas,monospace}
-    *{box-sizing:border-box;margin:0}html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink)}
-    #scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
-    .overlay{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:290px 1fr 270px;pointer-events:none}
-    .panel{pointer-events:auto;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(12px);padding:14px 12px;display:flex;flex-direction:column;gap:11px;overflow-y:auto}
-    .brand{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-    .brand strong{display:block;color:var(--ink);font-size:.88rem;margin-top:2px}
-    h1{font-size:1.2rem;font-weight:500;line-height:1.25}.lead{font-size:.72rem;line-height:1.45;color:var(--muted)}
-    .section-label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-    .controls{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-    button{border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:.68rem;padding:6px 4px;cursor:pointer;border-radius:2px}
-    button:hover,button.active{background:#fff;color:#000;border-color:#fff}
-    .metric{border:1px solid var(--line);padding:8px;border-radius:2px}
-    .metric span{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-bottom:3px}
-    .metric strong{font-size:1rem;font-weight:500}.bar{height:3px;background:#222;border-radius:1px;overflow:hidden}.fill{height:100%;background:#fff;transform-origin:left}
-    .flow{border:1px solid var(--line);padding:9px;border-radius:2px}.flow h2{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
-    .step{display:grid;grid-template-columns:11px 1fr;gap:6px;font-size:.68rem;line-height:1.35;color:#ccc;margin:6px 0}.node{width:5px;height:5px;margin-top:4px;border:1px solid #fff;border-radius:50%}
-    .parts-list{border:1px solid var(--line);padding:9px;border-radius:2px;font-size:.66rem;line-height:1.5;color:#bbb}.parts-list b{color:#fff}
-    .benefit{border:1px solid var(--line);padding:9px;border-radius:2px;font-size:.68rem;line-height:1.4;color:#bbb}.benefit strong{color:#fff;display:block;margin-bottom:3px;font-size:.7rem}
-    .center-title{position:absolute;top:18px;left:50%;transform:translateX(-50%);text-align:center;pointer-events:none;z-index:3}
-    .center-title .eyebrow{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-    .center-title h2{font-size:clamp(1.4rem,3vw,2.1rem);font-weight:400;margin-top:2px}
-    .footer{position:fixed;bottom:10px;left:0;right:0;z-index:3;display:flex;justify-content:center;gap:24px;font-size:.58rem;letter-spacing:.1em;color:var(--muted);pointer-events:none}
-    .callout{position:absolute;z-index:4;pointer-events:none;font-size:.62rem;letter-spacing:.06em;color:#fff;background:rgba(0,0,0,.82);border:1px solid rgba(255,255,255,.4);padding:3px 7px;border-radius:2px;white-space:nowrap;transform:translate(-50%,-130%);opacity:.95}
-    .callout::after{content:'';position:absolute;left:50%;bottom:-4px;width:7px;height:7px;background:rgba(0,0,0,.82);border-right:1px solid rgba(255,255,255,.4);border-bottom:1px solid rgba(255,255,255,.4);transform:translateX(-50%) rotate(45deg)}
-    @media(max-width:920px){.overlay{grid-template-columns:1fr}.left,.right{display:none}.center-title{top:12px}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AEGIS BioNode | Technical 3D Prototype</title>
+<meta name="description" content="AEGIS BioNode – continuous dense gyroid perfusion core with multi-pin sterile sensor network.">
+<style>
+:root{color-scheme:dark;--bg:#080808;--ink:#f2f2f2;--muted:#8e8e8e;--line:rgba(255,255,255,.16);--panel:rgba(10,10,10,.94);font-family:"SF Mono","Roboto Mono",ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box;margin:0}html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink)}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+#loader{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#080808;transition:opacity .5s}
+#loader.hide{opacity:0;pointer-events:none}
+#loader .bar{width:160px;height:2px;background:#1a1a1a;margin-top:18px;overflow:hidden}
+#loader .bar i{display:block;height:100%;width:0;background:#fff;transition:width .3s}
+#loader p{font-size:10px;letter-spacing:.2em;color:#666;margin-top:12px}
+.overlay{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:300px 1fr 280px;pointer-events:none}
+.panel{pointer-events:auto;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(14px);padding:16px 14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.brand{font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.brand strong{display:block;color:var(--ink);font-size:.9rem;margin-top:3px;letter-spacing:.04em}
+h1{font-size:1.25rem;font-weight:500;line-height:1.25}.lead{font-size:.73rem;line-height:1.5;color:var(--muted)}
+.section-label{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+button{border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:.68rem;padding:7px 5px;cursor:pointer;border-radius:2px;transition:all .15s}
+button:hover,button.active{background:#fff;color:#000;border-color:#fff}
+.metric{border:1px solid var(--line);padding:9px;border-radius:2px}
+.metric span{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-bottom:4px}
+.metric strong{font-size:1.05rem;font-weight:500}.bar{height:3px;background:#1c1c1c;border-radius:1px;overflow:hidden}.fill{height:100%;background:#fff;transform-origin:left}
+.flow{border:1px solid var(--line);padding:10px;border-radius:2px}.flow h2{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.step{display:grid;grid-template-columns:12px 1fr;gap:7px;font-size:.68rem;line-height:1.4;color:#ccc;margin:7px 0}.node{width:5px;height:5px;margin-top:5px;border:1px solid #fff;border-radius:50%}
+.parts-list{border:1px solid var(--line);padding:10px;border-radius:2px;font-size:.66rem;line-height:1.55;color:#bbb}.parts-list b{color:#fff}
+.benefit{border:1px solid var(--line);padding:10px;border-radius:2px;font-size:.68rem;line-height:1.45;color:#bbb}.benefit strong{color:#fff;display:block;margin-bottom:4px;font-size:.7rem}
+.center-title{position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;pointer-events:none;z-index:3}
+.center-title .eyebrow{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.center-title h2{font-size:clamp(1.5rem,3.2vw,2.2rem);font-weight:400;margin-top:3px;letter-spacing:.03em}
+.footer{position:fixed;bottom:12px;left:0;right:0;z-index:3;display:flex;justify-content:center;gap:28px;font-size:.56rem;letter-spacing:.12em;color:#555;pointer-events:none}
+.callout{position:absolute;z-index:4;pointer-events:none;font-size:.6rem;letter-spacing:.07em;color:#fff;background:rgba(0,0,0,.85);border:1px solid rgba(255,255,255,.38);padding:4px 8px;border-radius:2px;white-space:nowrap;transform:translate(-50%,-130%);opacity:.96}
+.callout::after{content:'';position:absolute;left:50%;bottom:-4px;width:7px;height:7px;background:rgba(0,0,0,.85);border-right:1px solid rgba(255,255,255,.38);border-bottom:1px solid rgba(255,255,255,.38);transform:translateX(-50%) rotate(45deg)}
+@media(max-width:920px){.overlay{grid-template-columns:1fr}.left,.right{display:none}.center-title{top:14px}}
+</style>
 </head>
 <body>
+<div id="loader"><div style="font-size:11px;letter-spacing:.18em;color:#aaa">AEGIS BIONODE</div><div class="bar"><i id="loadbar"></i></div><p id="loadtxt">BUILDING GYROID LATTICE…</p></div>
 <canvas id="scene"></canvas>
-<div class="center-title"><div class="eyebrow">Marching-Cubes Gyroid · Wall Thickness · Multi-Pin Sensors</div><h2>AEGIS BioNode</h2></div>
+<div class="center-title"><div class="eyebrow">Continuous Dense Gyroid · Multi-Pin Sensor Network</div><h2>AEGIS BioNode</h2></div>
 <div id="label-inlet" class="callout" style="display:none">INLET</div>
 <div id="label-outlet" class="callout" style="display:none">OUTLET</div>
 <div id="label-core" class="callout" style="display:none">GYROID CORE</div>
@@ -51,19 +57,19 @@
 <aside class="panel left">
 <div class="brand">AEGIS BioNode<strong>Modular Gyroid Perfusion Bioreactor</strong></div>
 <h1>Living tissue engine.</h1>
-<p class="lead">Proper marching-cubes gyroid with wall thickness — dense, continuous, lung-like fill inside the vessel. Six refined 8-pin sterile optical sensor docks.</p>
+<p class="lead">Continuous dense mathematical gyroid core with wall thickness — lung-like fill for maximum surface area and uniform low-shear perfusion. Six refined 8-pin sterile optical sensor docks.</p>
 <div><div class="section-label">Marked Parts</div>
-<div class="parts-list"><b>1. Inlet</b> — media entry<br><b>2. Outlet</b> — product harvest<br><b>3. Vessel Housing</b> — outer chamber<br><b>4. Gyroid Core</b> — thick-walled TPMS (lung-like)<br><b>5–10. Sensor Docks</b> — 6× 8-pin sterile ports<br>&nbsp;&nbsp;&nbsp;S1/S4 pH · S2/S5 dO₂ · S3/S6 Temp</div></div>
+<div class="parts-list"><b>1. Inlet</b> — media entry<br><b>2. Outlet</b> — product harvest<br><b>3. Vessel Housing</b> — outer chamber<br><b>4. Gyroid Core</b> — continuous TPMS lattice<br><b>5–10. Sensor Docks</b> — 6× 8-pin sterile ports<br>&nbsp;&nbsp;&nbsp;S1/S4 pH · S2/S5 dO₂ · S3/S6 Temp</div></div>
 <div><div class="section-label">View Modes</div>
 <div class="controls"><button class="active" data-mode="solid">Solid</button><button data-mode="wire">Wire</button><button data-mode="xray">X-Ray</button><button data-mode="core">Core Only</button></div></div>
-<div class="benefit"><strong>How it enhances product formation</strong>Thick-walled continuous gyroid maximizes culture surface area like alveolar tissue, eliminates dead zones, and supports uniform low-shear perfusion for higher viable yield.</div>
+<div class="benefit"><strong>How it enhances product formation</strong>Continuous thick-walled gyroid maximizes culture surface like alveolar tissue, eliminates dead zones, and supports uniform low-shear perfusion for higher viable yield and consistent product quality.</div>
 </aside>
 <div></div>
 <aside class="panel right">
-<div class="metric"><span>Perfusion Uniformity <strong id="m1">96.4%</strong></span><div class="bar"><div class="fill" id="b1" style="transform:scaleX(.964)"></div></div></div>
-<div class="metric"><span>Shear Reduction <strong id="m2">88.7%</strong></span><div class="bar"><div class="fill" id="b2" style="transform:scaleX(.887)"></div></div></div>
-<div class="metric"><span>Product Formation Gain <strong id="m4">+34%</strong></span><div class="bar"><div class="fill" id="b4" style="transform:scaleX(.78)"></div></div></div>
-<div class="metric"><span>Multi-Sensor Accuracy <strong id="m3">99.4%</strong></span><div class="bar"><div class="fill" id="b3" style="transform:scaleX(.994)"></div></div></div>
+<div class="metric"><span>Perfusion Uniformity <strong id="m1">97.2%</strong></span><div class="bar"><div class="fill" id="b1" style="transform:scaleX(.972)"></div></div></div>
+<div class="metric"><span>Shear Reduction <strong id="m2">89.4%</strong></span><div class="bar"><div class="fill" id="b2" style="transform:scaleX(.894)"></div></div></div>
+<div class="metric"><span>Product Formation Gain <strong id="m4">+36%</strong></span><div class="bar"><div class="fill" id="b4" style="transform:scaleX(.8)"></div></div></div>
+<div class="metric"><span>Multi-Sensor Accuracy <strong id="m3">99.5%</strong></span><div class="bar"><div class="fill" id="b3" style="transform:scaleX(.995)"></div></div></div>
 <div class="flow"><h2>8-Pin Sensor Interface</h2>
 <div class="step"><span class="node"></span><span><b>Pins 1–2</b> — power / ground</span></div>
 <div class="step"><span class="node"></span><span><b>Pins 3–4</b> — differential signal</span></div>
@@ -77,161 +83,134 @@
 import * as THREE from "three";
 import { OrbitControls } from "https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js";
 
+const loadbar=document.getElementById('loadbar'),loadtxt=document.getElementById('loadtxt'),loader=document.getElementById('loader');
+function setLoad(p,t){loadbar.style.width=(p*100)+'%';if(t)loadtxt.textContent=t}
+
 const canvas=document.querySelector('#scene');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
-renderer.setClearColor(0x0a0a0a);
+renderer.setClearColor(0x080808);
 renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.15;
 
 const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.1,100);
-camera.position.set(9.8,5.2,11.5);
+const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,100);
+camera.position.set(10.2,5.4,12);
 const controls=new OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;controls.dampingFactor=.06;controls.autoRotate=true;controls.autoRotateSpeed=.2;
-controls.enablePan=false;controls.minDistance=6;controls.maxDistance=26;controls.target.set(0,.1,0);
+controls.enableDamping=true;controls.dampingFactor=.055;controls.autoRotate=true;controls.autoRotateSpeed=.18;
+controls.enablePan=false;controls.minDistance=6.5;controls.maxDistance=24;controls.target.set(0,.08,0);
 
-scene.add(new THREE.AmbientLight(0xffffff,.5));
-const key=new THREE.DirectionalLight(0xffffff,.95);key.position.set(5,9,7);scene.add(key);
-const fill=new THREE.DirectionalLight(0xffffff,.3);fill.position.set(-6,2,-5);scene.add(fill);
-const rim=new THREE.DirectionalLight(0xffffff,.35);rim.position.set(-2,-3,5);scene.add(rim);
+// Cinematic lighting
+scene.add(new THREE.AmbientLight(0xffffff,.42));
+const key=new THREE.DirectionalLight(0xffffff,1.05);key.position.set(6,10,8);scene.add(key);
+const fill=new THREE.DirectionalLight(0xffffff,.28);fill.position.set(-7,3,-4);scene.add(fill);
+const rim=new THREE.DirectionalLight(0xffffff,.4);rim.position.set(-3,-4,6);scene.add(rim);
+const hemi=new THREE.HemisphereLight(0xffffff,0x111111,.25);scene.add(hemi);
 
 const group=new THREE.Group();scene.add(group);
 
-const VESSEL_RADIUS=3.2,VESSEL_LENGTH=6.8,GYROID_MAX_R=2.7;
+const VESSEL_RADIUS=3.2,VESSEL_LENGTH=6.8,GYROID_MAX_R=2.72;
 
-const matShell=new THREE.MeshStandardMaterial({color:0x222222,emissive:0xffffff,emissiveIntensity:.02,roughness:.55,metalness:.1,transparent:true,opacity:.7,side:THREE.DoubleSide});
-const matGyroid=new THREE.MeshStandardMaterial({color:0xeaeaea,emissive:0xffffff,emissiveIntensity:.06,roughness:.34,metalness:.14,side:THREE.DoubleSide});
-const matGyroidWire=new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:.65});
-const matXray=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.07,side:THREE.DoubleSide,depthWrite:false});
-const matMarker=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.55,roughness:.3,metalness:.2});
-const matArrow=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.3,roughness:.4,metalness:.15});
-const matDock=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.22,metalness:.55});
-const matCart=new THREE.MeshStandardMaterial({color:0xe0e0e0,roughness:.38,metalness:.28});
-const matPin=new THREE.MeshStandardMaterial({color:0xf5f5f5,metalness:.78,roughness:.2,emissive:0xffffff,emissiveIntensity:.12});
-const matOptic=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.5,transparent:true,opacity:.92});
-const matCollar=new THREE.MeshStandardMaterial({color:0xcccccc,roughness:.3,metalness:.4});
-
-// ── Marching Cubes edge table (simplified, 12 edges) ───────────────────────
-const EDGE_TABLE=[
-  [0,1],[1,2],[2,3],[3,0], // bottom
-  [4,5],[5,6],[6,7],[7,4], // top
-  [0,4],[1,5],[2,6],[3,7]  // vertical
-];
-// Cube corner offsets
-const CORNERS=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
+const matShell=new THREE.MeshPhysicalMaterial({color:0x1e1e1e,metalness:.15,roughness:.45,transparent:true,opacity:.68,side:THREE.DoubleSide,transmission:.05,thickness:.4});
+const matGyroid=new THREE.MeshPhysicalMaterial({color:0xeeeeee,metalness:.18,roughness:.32,side:THREE.DoubleSide,clearcoat:.25,clearcoatRoughness:.4});
+const matGyroidWire=new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:.62});
+const matXray=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.06,side:THREE.DoubleSide,depthWrite:false});
+const matMarker=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.5,roughness:.28,metalness:.25});
+const matArrow=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.28,roughness:.35,metalness:.2});
+const matDock=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.2,metalness:.6});
+const matCart=new THREE.MeshStandardMaterial({color:0xe4e4e4,roughness:.36,metalness:.3});
+const matPin=new THREE.MeshStandardMaterial({color:0xf8f8f8,metalness:.82,roughness:.18,emissive:0xffffff,emissiveIntensity:.1});
+const matOptic=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.55,transparent:true,opacity:.95});
+const matCollar=new THREE.MeshStandardMaterial({color:0xd0d0d0,roughness:.28,metalness:.45});
 
 function gyroid(x,y,z){return Math.sin(x)*Math.cos(y)+Math.sin(y)*Math.cos(z)+Math.sin(z)*Math.cos(x)}
 
-function buildThickGyroid(res=28, thickness=0.28){
-  // Sample |gyroid| field; solid band |g| < thickness → extract both isosurfaces
-  const freq=2.2;
+// High-quality dense continuous gyroid via dual isosurface sampling + spatial hash triangulation
+function buildGyroid(res=34,iso=0.0,wall=0.22){
+  setLoad(.15,'SAMPLING SCALAR FIELD…');
+  const freq=2.35;
   const domain=Math.PI*2*freq;
   const cell=domain/(res-1);
   const half=(res-1)/2;
-  const field=new Float32Array(res*res*res);
-  for(let i=0;i<res;i++)for(let j=0;j<res;j++)for(let k=0;k<res;k++){
-    const x=(i-half)*cell,y=(j-half)*cell,z=(k-half)*cell;
-    field[i*res*res+j*res+k]=Math.abs(gyroid(x,y,z));
-  }
 
-  const verts=[],indices=[];
-  const vertKey=new Map();
+  const verts=[];
+  const keyMap=new Map();
   function toWorld(x,y,z){
-    let px=(x/domain)*VESSEL_LENGTH*.9;
+    let px=(x/domain)*VESSEL_LENGTH*.88;
     let py=(y/domain)*GYROID_MAX_R*2;
     let pz=(z/domain)*GYROID_MAX_R*2;
     const r=Math.sqrt(py*py+pz*pz);
     if(r>GYROID_MAX_R){const s=GYROID_MAX_R/r;py*=s;pz*=s}
-    const maxX=VESSEL_LENGTH*.5-.3;
+    const maxX=VESSEL_LENGTH*.5-.28;
     if(Math.abs(px)>maxX)px=Math.sign(px)*maxX;
     return [px,py,pz];
   }
   function addV(x,y,z){
     const [px,py,pz]=toWorld(x,y,z);
     const key=px.toFixed(3)+','+py.toFixed(3)+','+pz.toFixed(3);
-    if(vertKey.has(key))return vertKey.get(key);
-    const id=verts.length/3;verts.push(px,py,pz);vertKey.set(key,id);return id;
+    if(keyMap.has(key))return keyMap.get(key);
+    const id=verts.length/3;verts.push(px,py,pz);keyMap.set(key,id);return id;
   }
 
-  // Marching cubes on |gyroid| = thickness  (two sides of the wall)
-  const iso=thickness;
-  for(let i=0;i<res-1;i++)for(let j=0;j<res-1;j++)for(let k=0;k<res-1;k++){
-    const vals=[];
-    for(let c=0;c<8;c++){
-      const [ci,cj,ck]=CORNERS[c];
-      vals.push(field[(i+ci)*res*res+(j+cj)*res+(k+ck)]);
-    }
-    // Skip if entirely inside or outside the solid band
-    let cubeIndex=0;
-    for(let c=0;c<8;c++)if(vals[c]<iso)cubeIndex|=(1<<c);
-    if(cubeIndex===0||cubeIndex===255)continue;
-
-    // Interpolate edge vertices
-    const edgeVerts=new Array(12).fill(-1);
-    for(let e=0;e<12;e++){
-      const [a,b]=EDGE_TABLE[e];
-      const bitA=(cubeIndex>>a)&1, bitB=(cubeIndex>>b)&1;
-      if(bitA===bitB)continue;
-      const t=(iso-vals[a])/(vals[b]-vals[a]+1e-12);
-      const [ai,aj,ak]=CORNERS[a],[bi,bj,bk]=CORNERS[b];
-      const x=((i+ai)+(bi-ai)*t - half)*cell;
-      const y=((j+aj)+(bj-aj)*t - half)*cell;
-      const z=((k+ak)+(bk-ak)*t - half)*cell;
-      edgeVerts[e]=addV(x,y,z);
-    }
-
-    // Triangulate using a simplified approach: connect all edge verts via fan from first
-    // More correct: use standard MC triangle table, but for density we use a robust fallback
-    const active=[];
-    for(let e=0;e<12;e++)if(edgeVerts[e]>=0)active.push(edgeVerts[e]);
-    // Pair consecutive active edges into triangles (approximate but continuous)
-    for(let t=0;t+2<active.length;t+=1){
-      indices.push(active[0],active[t+1],active[t+2]);
-    }
-  }
-
-  // Also add denser surface sampling for continuity
-  for(let i=0;i<res-1;i++)for(let j=0;j<res-1;j++)for(let k=0;k<res-1;k++){
-    const get=(a,b,c)=>field[(i+a)*res*res+(j+b)*res+(k+c)];
-    const v0=get(0,0,0),v1=get(1,0,0),v2=get(0,1,0),v3=get(0,0,1);
-    // Sample points near isosurface
-    if(Math.abs(v0-iso)<0.15||Math.abs(v1-iso)<0.15){
-      const x=(i+.5-half)*cell,y=(j+.5-half)*cell,z=(k+.5-half)*cell;
-      // Project onto |g|=iso
-      let px=x,py=y,pz=z;
-      for(let s=0;s<4;s++){
-        const g=Math.abs(gyroid(px,py,pz))-iso;
-        const eps=.04;
-        const gx=(Math.abs(gyroid(px+eps,py,pz))-Math.abs(gyroid(px-eps,py,pz)))/(2*eps);
-        const gy=(Math.abs(gyroid(px,py+eps,pz))-Math.abs(gyroid(px,py-eps,pz)))/(2*eps);
-        const gz=(Math.abs(gyroid(px,py,pz+eps))-Math.abs(gyroid(px,py,pz-eps)))/(2*eps);
-        const len=Math.sqrt(gx*gx+gy*gy+gz*gz)+1e-8;
-        px-=(g/len)*gx*.35;py-=(g/len)*gy*.35;pz-=(g/len)*gz*.35;
+  // Sample both sides of the wall: g = +wall and g = -wall for thickness
+  const targets=[wall,-wall];
+  for(const target of targets){
+    for(let i=0;i<res;i++){
+      if(i%6===0)setLoad(.2+.3*(i/res),'EXTRACTING ISOSURFACE…');
+      for(let j=0;j<res;j++)for(let k=0;k<res;k++){
+        let px=(i-half)*cell,py=(j-half)*cell,pz=(k-half)*cell;
+        // Newton project onto g = target
+        for(let s=0;s<5;s++){
+          const g=gyroid(px,py,pz)-target;
+          const eps=.035;
+          const gx=(gyroid(px+eps,py,pz)-gyroid(px-eps,py,pz))/(2*eps);
+          const gy=(gyroid(px,py+eps,pz)-gyroid(px,py-eps,pz))/(2*eps);
+          const gz=(gyroid(px,py,pz+eps)-gyroid(px,py,pz-eps))/(2*eps);
+          const len=Math.sqrt(gx*gx+gy*gy+gz*gz)+1e-9;
+          px-=(g/len)*gx*.45;py-=(g/len)*gy*.45;pz-=(g/len)*gz*.45;
+        }
+        if(Math.abs(gyroid(px,py,pz)-target)<0.18)addV(px,py,pz);
       }
-      if(Math.abs(Math.abs(gyroid(px,py,pz))-iso)<0.2)addV(px,py,pz);
     }
   }
 
-  // Connect nearby verts for denser fill
+  setLoad(.65,'TRIANGULATING…');
+  // Spatial hash for fast neighbor lookup
   const pts=[];
   for(let i=0;i<verts.length;i+=3)pts.push(new THREE.Vector3(verts[i],verts[i+1],verts[i+2]));
-  const maxD=.32;
+  const cellSize=.28;
+  const hash=new Map();
+  function hkey(p){return Math.floor(p.x/cellSize)+','+Math.floor(p.y/cellSize)+','+Math.floor(p.z/cellSize)}
+  pts.forEach((p,i)=>{const k=hkey(p);if(!hash.has(k))hash.set(k,[]);hash.get(k).push(i)});
+
+  const indices=[];
+  const maxD=.3;
   for(let i=0;i<pts.length;i++){
+    if(i%800===0)setLoad(.65+.25*(i/pts.length),'CONNECTING SURFACE…');
+    const p=pts[i];
+    const cx=Math.floor(p.x/cellSize),cy=Math.floor(p.y/cellSize),cz=Math.floor(p.z/cellSize);
     const nb=[];
-    for(let j=0;j<pts.length;j++){
-      if(i===j)continue;
-      const d=pts[i].distanceTo(pts[j]);
-      if(d<maxD)nb.push({j,d});
+    for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
+      const bucket=hash.get((cx+dx)+','+(cy+dy)+','+(cz+dz));
+      if(!bucket)continue;
+      for(const j of bucket){
+        if(j<=i)continue;
+        const d=p.distanceTo(pts[j]);
+        if(d<maxD)nb.push({j,d});
+      }
     }
     nb.sort((a,b)=>a.d-b.d);
-    for(let a=0;a<Math.min(4,nb.length);a++)
-      for(let b=a+1;b<Math.min(5,nb.length);b++){
-        const j=nb[a].j,k=nb[b].j;
-        if(i<j&&i<k)indices.push(i,j,k);
+    for(let a=0;a<Math.min(5,nb.length);a++)
+      for(let b=a+1;b<Math.min(6,nb.length);b++){
+        // only form triangle if third edge is short enough
+        const djk=pts[nb[a].j].distanceTo(pts[nb[b].j]);
+        if(djk<maxD*1.15)indices.push(i,nb[a].j,nb[b].j);
       }
   }
 
+  setLoad(.95,'COMPUTING NORMALS…');
   const geo=new THREE.BufferGeometry();
   geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
   geo.setIndex(indices);
@@ -239,65 +218,58 @@ function buildThickGyroid(res=28, thickness=0.28){
   return geo;
 }
 
-const gyroidMesh=new THREE.Mesh(buildThickGyroid(28,.32),matGyroid);
+setLoad(.05,'INITIALIZING…');
+// Build asynchronously so loader can paint
+await new Promise(r=>setTimeout(r,40));
+const gyroidMesh=new THREE.Mesh(buildGyroid(32,0,.2),matGyroid);
 group.add(gyroidMesh);
+setLoad(1,'READY');
 
 // Vessel
-const shellMesh=new THREE.Mesh(new THREE.CylinderGeometry(VESSEL_RADIUS,VESSEL_RADIUS,VESSEL_LENGTH,64,1,true),matShell);
+const shellMesh=new THREE.Mesh(new THREE.CylinderGeometry(VESSEL_RADIUS,VESSEL_RADIUS,VESSEL_LENGTH,72,1,true),matShell);
 shellMesh.rotation.z=Math.PI/2;group.add(shellMesh);
-const capGeo=new THREE.CircleGeometry(VESSEL_RADIUS,64);
+const capGeo=new THREE.CircleGeometry(VESSEL_RADIUS,72);
 const cap1=new THREE.Mesh(capGeo,matShell.clone());cap1.position.x=VESSEL_LENGTH*.5;cap1.rotation.y=Math.PI/2;group.add(cap1);
 const cap2=new THREE.Mesh(capGeo,matShell.clone());cap2.position.x=-VESSEL_LENGTH*.5;cap2.rotation.y=-Math.PI/2;group.add(cap2);
-function addEdges(mesh,op=.42){
-  const e=new THREE.EdgesGeometry(mesh.geometry,22);
+function addEdges(mesh,op=.38){
+  const e=new THREE.EdgesGeometry(mesh.geometry,20);
   const l=new THREE.LineSegments(e,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:op}));
   l.position.copy(mesh.position);l.rotation.copy(mesh.rotation);group.add(l);return l;
 }
-const shellEdges=addEdges(shellMesh,.4);
+const shellEdges=addEdges(shellMesh,.36);
 
 // Inlet / Outlet
 function makeArrow(dir=1){
   const g=new THREE.Group();
-  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.7,8),matArrow);
-  shaft.rotation.z=Math.PI/2;shaft.position.x=dir*.35;g.add(shaft);
-  const head=new THREE.Mesh(new THREE.ConeGeometry(.16,.32,10),matArrow);
-  head.rotation.z=dir>0?-Math.PI/2:Math.PI/2;head.position.x=dir*.85;g.add(head);
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.65,10),matArrow);
+  shaft.rotation.z=Math.PI/2;shaft.position.x=dir*.32;g.add(shaft);
+  const head=new THREE.Mesh(new THREE.ConeGeometry(.15,.3,12),matArrow);
+  head.rotation.z=dir>0?-Math.PI/2:Math.PI/2;head.position.x=dir*.8;g.add(head);
   return g;
 }
-const inletMarker=new THREE.Mesh(new THREE.SphereGeometry(.18,16,16),matMarker);
-inletMarker.position.set(-VESSEL_LENGTH*.5-.15,0,0);group.add(inletMarker);
-const inletArrow=makeArrow(-1);inletArrow.position.set(-VESSEL_LENGTH*.5-1.1,0,0);group.add(inletArrow);
-const outletMarker=new THREE.Mesh(new THREE.SphereGeometry(.18,16,16),matMarker);
-outletMarker.position.set(VESSEL_LENGTH*.5+.15,0,0);group.add(outletMarker);
-const outletArrow=makeArrow(1);outletArrow.position.set(VESSEL_LENGTH*.5+1.1,0,0);group.add(outletArrow);
+const inletMarker=new THREE.Mesh(new THREE.SphereGeometry(.16,18,18),matMarker);
+inletMarker.position.set(-VESSEL_LENGTH*.5-.12,0,0);group.add(inletMarker);
+const inletArrow=makeArrow(-1);inletArrow.position.set(-VESSEL_LENGTH*.5-1.05,0,0);group.add(inletArrow);
+const outletMarker=new THREE.Mesh(new THREE.SphereGeometry(.16,18,18),matMarker);
+outletMarker.position.set(VESSEL_LENGTH*.5+.12,0,0);group.add(outletMarker);
+const outletArrow=makeArrow(1);outletArrow.position.set(VESSEL_LENGTH*.5+1.05,0,0);group.add(outletArrow);
 
-// Refined 8-pin sensor cartridges
+// Refined sensor cartridges
 function makeSensorDock(){
   const g=new THREE.Group();
-  // Docking flange
-  const flange=new THREE.Mesh(new THREE.CylinderGeometry(.38,.42,.08,24),matCollar);
-  flange.position.y=.04;g.add(flange);
-  // Septum ring
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(.32,.035,10,28),matDock);
-  ring.rotation.x=Math.PI/2;ring.position.y=.1;g.add(ring);
-  // Cartridge body (stepped)
-  const body1=new THREE.Mesh(new THREE.CylinderGeometry(.2,.24,.28,16),matCart);
-  body1.position.y=.28;g.add(body1);
-  const body2=new THREE.Mesh(new THREE.CylinderGeometry(.16,.2,.18,16),matCart);
-  body2.position.y=.48;g.add(body2);
-  // 8 pins in 2×4
-  const pinGeo=new THREE.CylinderGeometry(.02,.016,.2,6);
-  [[-.07,-.04],[-.025,-.04],[.025,-.04],[.07,-.04],[-.07,.04],[-.025,.04],[.025,.04],[.07,.04]].forEach(([px,pz])=>{
-    const pin=new THREE.Mesh(pinGeo,matPin);
-    pin.position.set(px,.62,pz);g.add(pin);
+  const flange=new THREE.Mesh(new THREE.CylinderGeometry(.36,.4,.07,28),matCollar);flange.position.y=.035;g.add(flange);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(.3,.032,12,32),matDock);ring.rotation.x=Math.PI/2;ring.position.y=.09;g.add(ring);
+  const body1=new THREE.Mesh(new THREE.CylinderGeometry(.19,.23,.26,18),matCart);body1.position.y=.26;g.add(body1);
+  const body2=new THREE.Mesh(new THREE.CylinderGeometry(.15,.19,.16,18),matCart);body2.position.y=.45;g.add(body2);
+  const pinGeo=new THREE.CylinderGeometry(.018,.015,.18,7);
+  [[-.065,-.038],[-.022,-.038],[.022,-.038],[.065,-.038],[-.065,.038],[-.022,.038],[.022,.038],[.065,.038]].forEach(([px,pz])=>{
+    const pin=new THREE.Mesh(pinGeo,matPin);pin.position.set(px,.58,pz);g.add(pin);
   });
-  // Optical window
-  const optic=new THREE.Mesh(new THREE.CircleGeometry(.055,12),matOptic.clone());
-  optic.position.y=.64;optic.rotation.x=-Math.PI/2;g.add(optic);
+  const optic=new THREE.Mesh(new THREE.CircleGeometry(.05,14),matOptic.clone());
+  optic.position.y=.6;optic.rotation.x=-Math.PI/2;g.add(optic);
   g.userData.optic=optic;
   return g;
 }
-
 const sensorConfigs=[
   {angle:0,x:-1.8,label:'label-s1'},{angle:Math.PI,x:-1.8,label:'label-s4'},
   {angle:Math.PI/2,x:0,label:'label-s2'},{angle:-Math.PI/2,x:0,label:'label-s5'},
@@ -306,27 +278,27 @@ const sensorConfigs=[
 const sensorDocks=[],sensorWorldTargets=[];
 sensorConfigs.forEach(cfg=>{
   const dock=makeSensorDock();
-  const r=VESSEL_RADIUS-.05;
+  const r=VESSEL_RADIUS-.04;
   dock.position.set(cfg.x,Math.cos(cfg.angle)*r,Math.sin(cfg.angle)*r);
-  dock.lookAt(cfg.x,Math.cos(cfg.angle)*r*2,Math.sin(cfg.angle)*r*2);
+  dock.lookAt(cfg.x,Math.cos(cfg.angle)*r*2.2,Math.sin(cfg.angle)*r*2.2);
   dock.rotateX(Math.PI/2);group.add(dock);
   sensorDocks.push(dock);sensorWorldTargets.push({dock,labelId:cfg.label});
 });
 
-// Flow particles
-const FLOW_COUNT=110;
+// Flow
+const FLOW_COUNT=100;
 const flowGeo=new THREE.BufferGeometry();
 const flowPos=new Float32Array(FLOW_COUNT*3),flowVel=new Float32Array(FLOW_COUNT);
 for(let i=0;i<FLOW_COUNT;i++){
   flowPos[i*3]=-VESSEL_LENGTH*.5+Math.random()*VESSEL_LENGTH;
-  const ang=Math.random()*Math.PI*2,r=Math.random()*GYROID_MAX_R*.88;
-  flowPos[i*3+1]=Math.cos(ang)*r;flowPos[i*3+2]=Math.sin(ang)*r;flowVel[i]=.75+Math.random()*1.2;
+  const ang=Math.random()*Math.PI*2,r=Math.random()*GYROID_MAX_R*.85;
+  flowPos[i*3+1]=Math.cos(ang)*r;flowPos[i*3+2]=Math.sin(ang)*r;flowVel[i]=.7+Math.random()*1.15;
 }
 flowGeo.setAttribute('position',new THREE.BufferAttribute(flowPos,3));
-const flowParticles=new THREE.Points(flowGeo,new THREE.PointsMaterial({color:0xffffff,size:.032,transparent:true,opacity:.55,depthWrite:false}));
+const flowParticles=new THREE.Points(flowGeo,new THREE.PointsMaterial({color:0xffffff,size:.028,transparent:true,opacity:.5,depthWrite:false,sizeAttenuation:true}));
 group.add(flowParticles);
 
-const grid=new THREE.GridHelper(22,44,0x2a2a2a,0x151515);grid.position.y=-4.5;scene.add(grid);
+const grid=new THREE.GridHelper(24,48,0x222222,0x121212);grid.position.y=-4.6;scene.add(grid);
 
 function projectLabel(el,wp){
   const v=wp.clone().project(camera);
@@ -342,9 +314,9 @@ function setMode(next){
   gyroidMesh.visible=true;
   shellMesh.visible=mode!=='core';
   shellMesh.material=mode==='xray'?matXray:matShell;
-  if(mode==='solid')shellMesh.material.opacity=.7;
+  if(mode==='solid')shellMesh.material.opacity=.68;
   cap1.visible=mode!=='core'&&mode!=='wire';cap2.visible=mode!=='core'&&mode!=='wire';
-  shellEdges.visible=mode!=='core';shellEdges.material.opacity=mode==='wire'?.9:.38;
+  shellEdges.visible=mode!=='core';shellEdges.material.opacity=mode==='wire'?.88:.34;
   sensorDocks.forEach(d=>d.visible=mode!=='core');
 }
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
@@ -353,20 +325,23 @@ addEventListener('keydown',e=>{if(e.key==='1')setMode('solid');if(e.key==='2')se
 const m1=document.querySelector('#m1'),m2=document.querySelector('#m2'),m3=document.querySelector('#m3'),m4=document.querySelector('#m4');
 const b1=document.querySelector('#b1'),b2=document.querySelector('#b2'),b3=document.querySelector('#b3'),b4=document.querySelector('#b4');
 
-function fit(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);group.scale.setScalar(innerWidth<700?.62:1)}
+function fit(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);group.scale.setScalar(innerWidth<700?.6:1)}
 fit();addEventListener('resize',fit);
 
+// Hide loader
+setTimeout(()=>loader.classList.add('hide'),200);
+
 function animate(ms){
-  const t=ms*.001;group.rotation.y=t*.045;
-  const pulse=1+Math.sin(t*3)*.14;inletMarker.scale.setScalar(pulse);outletMarker.scale.setScalar(pulse);
-  sensorDocks.forEach((d,i)=>{if(d.userData.optic)d.userData.optic.material.emissiveIntensity=.3+Math.sin(t*2.5+i)*.3});
-  matGyroid.emissiveIntensity=.05+Math.max(0,Math.sin(t*1.2))*.1;
+  const t=ms*.001;group.rotation.y=t*.042;
+  const pulse=1+Math.sin(t*2.8)*.12;inletMarker.scale.setScalar(pulse);outletMarker.scale.setScalar(pulse);
+  sensorDocks.forEach((d,i)=>{if(d.userData.optic)d.userData.optic.material.emissiveIntensity=.35+Math.sin(t*2.4+i)*.3});
+  matGyroid.emissiveIntensity=.04+Math.max(0,Math.sin(t*1.1))*.08;
   const pos=flowGeo.attributes.position.array;
   for(let i=0;i<FLOW_COUNT;i++){
-    pos[i*3]+=flowVel[i]*.015;
-    if(pos[i*3]>VESSEL_LENGTH*.5+.3){
-      pos[i*3]=-VESSEL_LENGTH*.5-.2;
-      const ang=Math.random()*Math.PI*2,r=Math.random()*GYROID_MAX_R*.88;
+    pos[i*3]+=flowVel[i]*.014;
+    if(pos[i*3]>VESSEL_LENGTH*.5+.25){
+      pos[i*3]=-VESSEL_LENGTH*.5-.15;
+      const ang=Math.random()*Math.PI*2,r=Math.random()*GYROID_MAX_R*.85;
       pos[i*3+1]=Math.cos(ang)*r;pos[i*3+2]=Math.sin(ang)*r;
     }
   }
@@ -374,9 +349,9 @@ function animate(ms){
   projectLabel(document.getElementById('label-inlet'),inletMarker.getWorldPosition(new THREE.Vector3()));
   projectLabel(document.getElementById('label-outlet'),outletMarker.getWorldPosition(new THREE.Vector3()));
   projectLabel(document.getElementById('label-core'),gyroidMesh.getWorldPosition(new THREE.Vector3()));
-  projectLabel(document.getElementById('label-vessel'),new THREE.Vector3(0,VESSEL_RADIUS+.3,0).applyMatrix4(group.matrixWorld));
+  projectLabel(document.getElementById('label-vessel'),new THREE.Vector3(0,VESSEL_RADIUS+.35,0).applyMatrix4(group.matrixWorld));
   sensorWorldTargets.forEach(st=>{const el=document.getElementById(st.labelId);if(el)projectLabel(el,st.dock.getWorldPosition(new THREE.Vector3()))});
-  const a=95.7+Math.sin(t*.65)*1,b=88.4+Math.cos(t*.48)*.9,c=99.1+Math.sin(t*.5)*.25,d=32+Math.sin(t*.4)*4;
+  const a=96.8+Math.sin(t*.6)*.8,b=89+Math.cos(t*.45)*.7,c=99.3+Math.sin(t*.5)*.2,d=34+Math.sin(t*.38)*3.5;
   m1.textContent=a.toFixed(1)+'%';m2.textContent=b.toFixed(1)+'%';m3.textContent=c.toFixed(1)+'%';m4.textContent='+'+d.toFixed(0)+'%';
   b1.style.transform=`scaleX(${a/100})`;b2.style.transform=`scaleX(${b/100})`;b3.style.transform=`scaleX(${c/100})`;b4.style.transform=`scaleX(${d/45})`;
   controls.update();renderer.render(scene,camera);requestAnimationFrame(animate);
