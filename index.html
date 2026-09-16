@@ -16,36 +16,39 @@ button:hover,button.on{background:#fff;color:#000}
 .metric{border:1px solid #333;padding:8px;margin:6px 0}.metric b{float:right}
 .title{position:absolute;top:14px;left:50%;transform:translateX(-50%);text-align:center}
 .title div{font-size:10px;letter-spacing:2px;color:#888}.title h2{margin:4px 0 0;font-size:26px;font-weight:400}
-.foot{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:10px;color:#666}
+.foot{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:10px;color:#666;letter-spacing:1px}
 .zone{position:absolute;z-index:15;pointer-events:none;font-size:10px;letter-spacing:.06em;color:#fff;background:rgba(0,0,0,.88);border:1px solid rgba(255,255,255,.45);padding:3px 8px;border-radius:2px;white-space:nowrap;transform:translate(-50%,-130%)}
-.tree{border:1px solid #333;padding:10px;margin:8px 0;font-size:11px;color:#bbb;line-height:1.5}
-.tree b{color:#fff}
+.zone::after{content:'';position:absolute;left:50%;bottom:-4px;width:7px;height:7px;background:rgba(0,0,0,.88);border-right:1px solid rgba(255,255,255,.45);border-bottom:1px solid rgba(255,255,255,.45);transform:translateX(-50%) rotate(45deg)}
+.flow-box{border:1px solid #333;padding:10px;margin:8px 0;font-size:11px;color:#bbb;line-height:1.5}
+.flow-box b{color:#fff}
 @media(max-width:800px){.panel{display:none}}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <div id="z-inlet" class="zone" style="display:none">CENTRAL INLET</div>
-<div id="z-branch" class="zone" style="display:none">BRANCHED MANIFOLD</div>
+<div id="z-manifold" class="zone" style="display:none">BRANCHED MANIFOLD</div>
 <div id="z1" class="zone" style="display:none">ZONE 1 + SENSOR</div>
 <div id="z2" class="zone" style="display:none">ZONE 2 + SENSOR</div>
 <div id="z3" class="zone" style="display:none">ZONE 3 + SENSOR</div>
 <div id="z4" class="zone" style="display:none">ZONE 4 + SENSOR</div>
 <div id="z-outman" class="zone" style="display:none">OUTLET MANIFOLD</div>
 <div id="z-outlet" class="zone" style="display:none">OUTLET</div>
+<div id="z-core" class="zone" style="display:none">GYROID CORE</div>
 <div class="ui">
-  <div class="title"><div>4-ZONE BRANCHED MANIFOLD</div><h2>AEGIS BioNode</h2></div>
+  <div class="title"><div>CYLINDRICAL GYROID · 4-ZONE FLOW · SENSORS</div><h2>AEGIS BioNode</h2></div>
   <div class="panel left">
     <div class="muted">AEGIS BIONODE</div>
-    <h1>Branched perfusion</h1>
-    <div class="tree">
+    <h1>Living tissue engine</h1>
+    <p class="muted">Cylindrical vessel with continuous gyroid lattice. Flow path below is internal logic — not the physical shape.</p>
+    <div class="flow-box">
       <b>Central inlet</b><br>
       &nbsp;&nbsp;│<br>
       <b>Branched manifold</b><br>
       &nbsp;/&nbsp;&nbsp;|&nbsp;&nbsp;\&nbsp;&nbsp;\<br>
-      Z1&nbsp;&nbsp;Z2&nbsp;&nbsp;Z3&nbsp;&nbsp;Z4<br>
-      &nbsp;↓&nbsp;&nbsp;&nbsp;↓&nbsp;&nbsp;&nbsp;↓&nbsp;&nbsp;&nbsp;↓<br>
-      sensor on each zone<br>
+      Z1&nbsp;Z2&nbsp;Z3&nbsp;Z4<br>
+      &nbsp;↓&nbsp;&nbsp;↓&nbsp;&nbsp;↓&nbsp;&nbsp;↓<br>
+      sensors on each<br>
       &nbsp;\&nbsp;&nbsp;|&nbsp;&nbsp;/&nbsp;&nbsp;/<br>
       <b>Outlet manifold</b><br>
       &nbsp;&nbsp;│<br>
@@ -54,15 +57,16 @@ button:hover,button.on{background:#fff;color:#000}
     <button class="on" id="b1">Solid</button>
     <button id="b2">Wire</button>
     <button id="b3">X-Ray</button>
+    <button id="b4">Core</button>
   </div>
   <div class="panel right">
     <div class="metric">Perfusion <b id="m1">97%</b></div>
     <div class="metric">Shear reduction <b id="m2">89%</b></div>
     <div class="metric">Product gain <b id="m3">+35%</b></div>
-    <div class="metric">Zone uniformity <b id="m4">98%</b></div>
-    <p class="muted" style="margin-top:12px">White particles follow: inlet → branches → zones → outlet</p>
+    <div class="metric">Zone accuracy <b id="m4">99%</b></div>
+    <p class="muted" style="margin-top:12px">Media enters central inlet, distributes into 4 gyroid zones (each sensed), recombines at outlet manifold.</p>
   </div>
-  <div class="foot">DRAG TO ROTATE · SCROLL TO ZOOM</div>
+  <div class="foot">DRAG TO ROTATE · SCROLL TO ZOOM · 1–4 VIEW</div>
 </div>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.165.0/build/three.module.js"}}</script>
 <script type="module">
@@ -77,199 +81,207 @@ renderer.setClearColor(0x0a0a0a);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 7, 13);
+camera.position.set(9, 5, 11);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.autoRotate = true;
-controls.autoRotateSpeed = 0.2;
+controls.autoRotateSpeed = 0.22;
 controls.enablePan = false;
-controls.minDistance = 6;
-controls.maxDistance = 26;
+controls.minDistance = 5;
+controls.maxDistance = 24;
 controls.target.set(0, 0, 0);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-const light1 = new THREE.DirectionalLight(0xffffff, 0.9);
-light1.position.set(4, 10, 6);
-scene.add(light1);
-const light2 = new THREE.DirectionalLight(0xffffff, 0.3);
-light2.position.set(-5, 2, -4);
-scene.add(light2);
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const dl = new THREE.DirectionalLight(0xffffff, 0.95);
+dl.position.set(5, 9, 7); scene.add(dl);
+const dl2 = new THREE.DirectionalLight(0xffffff, 0.3);
+dl2.position.set(-6, 2, -4); scene.add(dl2);
 
 const root = new THREE.Group();
 scene.add(root);
 
-const matPipe = new THREE.MeshStandardMaterial({ color: 0xd0d0d0, roughness: 0.35, metalness: 0.25 });
-const matZone = new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.4, metalness: 0.15, transparent: true, opacity: 0.45, side: THREE.DoubleSide });
-const matWire = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
-const matXray = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthWrite: false });
-const matMark = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5, roughness: 0.3 });
-const matSensor = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, roughness: 0.3, metalness: 0.35 });
-const matGyro = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
+const R = 3.0, L = 6.8, GR = 2.45;
 
-function makePipe(radius, height) {
-  return new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, height, 14), matPipe);
+const matShell = new THREE.MeshStandardMaterial({ color: 0x222222, transparent: true, opacity: 0.42, side: THREE.DoubleSide, roughness: 0.5 });
+const matXray = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.07, side: THREE.DoubleSide, depthWrite: false });
+const matMark = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.45, roughness: 0.3 });
+const matGrey = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.35, metalness: 0.3 });
+const matGyro = new THREE.LineBasicMaterial({ color: 0xe8e8e8, transparent: true, opacity: 0.88 });
+const matGyroWire = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1 });
+
+// Vessel cylinder
+const shell = new THREE.Mesh(new THREE.CylinderGeometry(R, R, L, 48, 1, true), matShell);
+shell.rotation.z = Math.PI / 2;
+root.add(shell);
+const capGeo = new THREE.CircleGeometry(R, 48);
+const capL = new THREE.Mesh(capGeo, matShell.clone());
+capL.position.x = -L / 2; capL.rotation.y = -Math.PI / 2; root.add(capL);
+const capR = new THREE.Mesh(capGeo, matShell.clone());
+capR.position.x = L / 2; capR.rotation.y = Math.PI / 2; root.add(capR);
+
+// True gyroid isosurface lines
+function G(x, y, z) {
+  return Math.sin(x) * Math.cos(y) + Math.sin(y) * Math.cos(z) + Math.sin(z) * Math.cos(x);
 }
-
-function connect(x1, y1, z1, x2, y2, z2, radius) {
-  const dx = x2 - x1, dy = y2 - y1, dz = z2 - z1;
-  const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
-  const mesh = makePipe(radius, len);
-  mesh.position.set((x1 + x2) / 2, (y1 + y2) / 2, (z1 + z2) / 2);
-  mesh.quaternion.setFromUnitVectors(
-    new THREE.Vector3(0, 1, 0),
-    new THREE.Vector3(dx, dy, dz).normalize()
-  );
-  root.add(mesh);
-  return mesh;
+function buildGyroid() {
+  const freq = 2.0, res = 20;
+  const domain = Math.PI * 2 * freq;
+  const step = domain / (res - 1);
+  const half = (res - 1) / 2;
+  function toW(fx, fy, fz) {
+    let px = (fx / domain) * L * 0.88;
+    let py = (fy / domain) * GR * 2;
+    let pz = (fz / domain) * GR * 2;
+    const r = Math.sqrt(py * py + pz * pz);
+    if (r > GR) { py *= GR / r; pz *= GR / r; }
+    const mx = L * 0.5 - 0.3;
+    if (Math.abs(px) > mx) px = Math.sign(px) * mx;
+    return [px, py, pz];
+  }
+  const field = new Float32Array(res * res * res);
+  for (let i = 0; i < res; i++)
+    for (let j = 0; j < res; j++)
+      for (let k = 0; k < res; k++)
+        field[i * res * res + j * res + k] = G((i - half) * step, (j - half) * step, (k - half) * step);
+  const edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  const corn = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
+  const pos = [];
+  function val(i, j, k) { return field[i * res * res + j * res + k]; }
+  for (let i = 0; i < res - 1; i++)
+    for (let j = 0; j < res - 1; j++)
+      for (let k = 0; k < res - 1; k++) {
+        const pts = [];
+        for (let e = 0; e < 12; e++) {
+          const a = corn[edges[e][0]], b = corn[edges[e][1]];
+          const va = val(i + a[0], j + a[1], k + a[2]);
+          const vb = val(i + b[0], j + b[1], k + b[2]);
+          if (va * vb >= 0) continue;
+          const t = va / (va - vb);
+          pts.push(toW(
+            (i + a[0] + (b[0] - a[0]) * t - half) * step,
+            (j + a[1] + (b[1] - a[1]) * t - half) * step,
+            (k + a[2] + (b[2] - a[2]) * t - half) * step
+          ));
+        }
+        for (let a = 0; a < pts.length; a++)
+          for (let b = a + 1; b < pts.length; b++) {
+            const dx = pts[a][0] - pts[b][0], dy = pts[a][1] - pts[b][1], dz = pts[a][2] - pts[b][2];
+            const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            if (d > 0.05 && d < 0.55) {
+              pos.push(pts[a][0], pts[a][1], pts[a][2], pts[b][0], pts[b][1], pts[b][2]);
+            }
+          }
+      }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  return geo;
 }
+const gyroLines = new THREE.LineSegments(buildGyroid(), matGyro);
+root.add(gyroLines);
 
-// Zone Z positions
-const zoneZ = [-3, -1, 1, 3];
+// Inlet / outlet markers
+const inlet = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), matMark);
+inlet.position.set(-L / 2 - 0.25, 0, 0); root.add(inlet);
+const outlet = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 12), matMark);
+outlet.position.set(L / 2 + 0.25, 0, 0); root.add(outlet);
+
+function arrow(dir) {
+  const g = new THREE.Group();
+  const s = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.55, 8), matMark);
+  s.rotation.z = Math.PI / 2; s.position.x = dir * 0.25; g.add(s);
+  const h = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.26, 8), matMark);
+  h.rotation.z = dir > 0 ? -Math.PI / 2 : Math.PI / 2; h.position.x = dir * 0.65; g.add(h);
+  return g;
+}
+const aIn = arrow(-1); aIn.position.set(-L / 2 - 1.05, 0, 0); root.add(aIn);
+const aOut = arrow(1); aOut.position.set(L / 2 + 1.05, 0, 0); root.add(aOut);
+
+// 4 zone sensors at quarter positions along length (internal flow zones)
+// Zone centers along X: -2.0, -0.7, 0.7, 2.0
+const zoneXs = [-2.0, -0.7, 0.7, 2.0];
 const zoneIds = ["z1", "z2", "z3", "z4"];
-const zoneShells = [];
-const zoneCenters = [];
-
-// === CENTRAL INLET ===
-const inletMark = new THREE.Mesh(new THREE.SphereGeometry(0.25, 12, 12), matMark);
-inletMark.position.set(0, 4.5, 0);
-root.add(inletMark);
-
-const inletPipe = makePipe(0.16, 1.0);
-inletPipe.position.set(0, 3.7, 0);
-root.add(inletPipe);
-
-// === BRANCH HUB ===
-const hub = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 12), matPipe);
-hub.position.set(0, 2.9, 0);
-root.add(hub);
-
-// === 4 ZONES ===
+const sensors = [];
 for (let i = 0; i < 4; i++) {
-  const z = zoneZ[i];
-
-  // Branch from hub to above zone
-  connect(0, 2.9, 0, 0, 1.5, z, 0.09);
-  connect(0, 1.5, z, 0, 0.85, z, 0.09);
-
-  // Zone cylinder
-  const shell = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.7, 0.7, 1.5, 20, 1, true),
-    matZone.clone()
-  );
-  shell.position.set(0, 0, z);
-  root.add(shell);
-  zoneShells.push(shell);
-  zoneCenters.push(new THREE.Vector3(0, 0, z));
-
-  // Top / bottom caps
-  const capTop = new THREE.Mesh(new THREE.CircleGeometry(0.7, 20), matZone.clone());
-  capTop.position.set(0, 0.75, z);
-  capTop.rotation.x = -Math.PI / 2;
-  root.add(capTop);
-
-  const capBot = new THREE.Mesh(new THREE.CircleGeometry(0.7, 20), matZone.clone());
-  capBot.position.set(0, -0.75, z);
-  capBot.rotation.x = Math.PI / 2;
-  root.add(capBot);
-
-  // Simple gyroid-like lattice (cross rings)
-  for (let r = 0; r < 3; r++) {
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(0.25 + r * 0.12, 0.025, 6, 20),
-      matPipe
-    );
-    ring.position.set(0, -0.3 + r * 0.3, z);
-    ring.rotation.x = Math.PI / 2 + r * 0.4;
-    ring.rotation.y = r * 0.5;
-    root.add(ring);
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.4, 12), matGrey);
+  body.position.y = 0.28; g.add(body);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.03, 8, 18), matMark);
+  ring.rotation.x = Math.PI / 2; ring.position.y = 0.06; g.add(ring);
+  for (let p = 0; p < 8; p++) {
+    const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.012, 0.14, 4), matMark);
+    pin.position.set(-0.055 + (p % 4) * 0.037, 0.52, -0.03 + Math.floor(p / 4) * 0.06);
+    g.add(pin);
   }
-  // Vertical struts inside zone
-  for (let s = 0; s < 4; s++) {
-    const ang = (s / 4) * Math.PI * 2;
-    const strut = makePipe(0.03, 1.2);
-    strut.position.set(Math.cos(ang) * 0.35, 0, z + Math.sin(ang) * 0.35);
-    root.add(strut);
-  }
-
-  // Sensor on side of zone
-  const sensorBody = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.3, 10), matSensor);
-  sensorBody.position.set(0.85, 0.15, z);
-  sensorBody.rotation.z = Math.PI / 2;
-  root.add(sensorBody);
-
-  const sensorRing = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.02, 6, 14), matMark);
-  sensorRing.position.set(0.7, 0.15, z);
-  sensorRing.rotation.y = Math.PI / 2;
-  root.add(sensorRing);
-
-  // Outlet pipes from zone to bottom hub
-  connect(0, -0.75, z, 0, -1.6, z, 0.09);
-  connect(0, -1.6, z, 0, -2.5, 0, 0.09);
+  // Place sensors around vessel at each zone X
+  const ang = (i / 4) * Math.PI * 2 + 0.3;
+  const rr = R - 0.05;
+  g.position.set(zoneXs[i], Math.cos(ang) * rr, Math.sin(ang) * rr);
+  g.lookAt(zoneXs[i], Math.cos(ang) * rr * 2, Math.sin(ang) * rr * 2);
+  g.rotateX(Math.PI / 2);
+  root.add(g);
+  sensors.push({ mesh: g, id: zoneIds[i], x: zoneXs[i] });
 }
 
-// === OUTLET MANIFOLD ===
-const outHub = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), matPipe);
-outHub.position.set(0, -2.5, 0);
-root.add(outHub);
-
-const outPipe = makePipe(0.16, 1.0);
-outPipe.position.set(0, -3.3, 0);
-root.add(outPipe);
-
-const outletMark = new THREE.Mesh(new THREE.SphereGeometry(0.25, 12, 12), matMark);
-outletMark.position.set(0, -4.1, 0);
-root.add(outletMark);
-
-// === FLOW PARTICLES ===
-const PN = 120;
+// Flow particles: inlet → spread into 4 zone paths → outlet
+const PN = 200;
 const pPos = new Float32Array(PN * 3);
 const pData = [];
 for (let i = 0; i < PN; i++) {
   pData.push({
     t: Math.random(),
-    speed: 0.2 + Math.random() * 0.35,
-    path: i % 4
+    speed: 0.25 + Math.random() * 0.45,
+    zone: i % 4,
+    phase: Math.random() * Math.PI * 2
   });
 }
 const pGeo = new THREE.BufferGeometry();
 pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
-const particles = new THREE.Points(
-  pGeo,
-  new THREE.PointsMaterial({
-    color: 0xffffff,
-    size: 0.08,
-    transparent: true,
-    opacity: 0.9,
-    depthWrite: false,
-    sizeAttenuation: true
-  })
-);
-root.add(particles);
+root.add(new THREE.Points(pGeo, new THREE.PointsMaterial({
+  color: 0xffffff, size: 0.06, transparent: true, opacity: 0.85,
+  depthWrite: false, sizeAttenuation: true
+})));
 
-function flowPos(t, path) {
-  const z = zoneZ[path];
+function flowPos(t, zone, phase) {
+  // 0-0.15: central inlet region
+  // 0.15-0.3: branch into zone (manifold)
+  // 0.3-0.7: through zone gyroid
+  // 0.7-0.85: outlet manifold
+  // 0.85-1: outlet
+  const zOff = ((zone / 4) * Math.PI * 2) + phase * 0.3;
+  const rad = 0.4 + (zone * 0.25) + Math.sin(phase) * 0.3;
   if (t < 0.12) {
     const u = t / 0.12;
-    return [0, 4.5 - u * 1.6, 0];
+    return [-L / 2 + u * 0.8, Math.cos(phase) * 0.15 * u, Math.sin(phase) * 0.15 * u];
   } else if (t < 0.28) {
     const u = (t - 0.12) / 0.16;
-    return [0, 2.9 - u * 1.4, z * u];
-  } else if (t < 0.52) {
-    const u = (t - 0.28) / 0.24;
-    return [0, 0.75 - u * 1.5, z];
+    const x = -L / 2 + 0.8 + u * (zoneXs[zone] + L / 2 - 0.8);
+    const r = rad * u;
+    return [x, Math.cos(zOff) * r, Math.sin(zOff) * r];
   } else if (t < 0.72) {
-    const u = (t - 0.52) / 0.2;
-    return [0, -0.75 - u * 1.75, z * (1 - u)];
+    const u = (t - 0.28) / 0.44;
+    const x0 = zoneXs[zone];
+    const x1 = zoneXs[zone] + 0.1;
+    // stay in zone band, weave through gyroid
+    const x = x0 + (x1 - x0) * u + (zoneXs[Math.min(zone + 1, 3)] - x0) * u * 0.5;
+    const r = rad * (0.7 + 0.3 * Math.sin(u * 6 + phase));
+    return [
+      -L / 2 + 1.2 + u * (L - 2.4),
+      Math.cos(zOff + u * 2) * r,
+      Math.sin(zOff + u * 2) * r
+    ];
+  } else if (t < 0.88) {
+    const u = (t - 0.72) / 0.16;
+    const r = rad * (1 - u);
+    return [L / 2 - 1.2 + u * 0.9, Math.cos(zOff) * r, Math.sin(zOff) * r];
   } else {
-    const u = (t - 0.72) / 0.28;
-    return [0, -2.5 - u * 1.6, 0];
+    const u = (t - 0.88) / 0.12;
+    return [L / 2 - 0.3 + u * 0.5, 0, 0];
   }
 }
 
 const grid = new THREE.GridHelper(20, 40, 0x222222, 0x141414);
-grid.position.y = -5;
-scene.add(grid);
+grid.position.y = -4.3; scene.add(grid);
 
 function proj(id, x, y, z) {
   const el = document.getElementById(id);
@@ -287,19 +299,25 @@ function setMode(m) {
   document.getElementById("b1").className = m === "solid" ? "on" : "";
   document.getElementById("b2").className = m === "wire" ? "on" : "";
   document.getElementById("b3").className = m === "xray" ? "on" : "";
-  for (let i = 0; i < zoneShells.length; i++) {
-    if (m === "wire") zoneShells[i].material = matWire;
-    else if (m === "xray") zoneShells[i].material = matXray;
-    else {
-      zoneShells[i].material = matZone.clone();
-      zoneShells[i].material.opacity = 0.45;
-    }
-  }
+  document.getElementById("b4").className = m === "core" ? "on" : "";
+  gyroLines.material = m === "wire" ? matGyroWire : matGyro;
+  shell.visible = m !== "core";
+  shell.material = m === "xray" ? matXray : matShell;
+  if (m === "solid") shell.material.opacity = 0.42;
+  capL.visible = m !== "core" && m !== "wire";
+  capR.visible = m !== "core" && m !== "wire";
+  sensors.forEach(function (s) { s.mesh.visible = m !== "core"; });
 }
 document.getElementById("b1").onclick = function () { setMode("solid"); };
 document.getElementById("b2").onclick = function () { setMode("wire"); };
 document.getElementById("b3").onclick = function () { setMode("xray"); };
-
+document.getElementById("b4").onclick = function () { setMode("core"); };
+window.addEventListener("keydown", function (e) {
+  if (e.key === "1") setMode("solid");
+  if (e.key === "2") setMode("wire");
+  if (e.key === "3") setMode("xray");
+  if (e.key === "4") setMode("core");
+});
 window.addEventListener("resize", function () {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -309,12 +327,13 @@ window.addEventListener("resize", function () {
 function animate(t) {
   requestAnimationFrame(animate);
   const sec = t * 0.001;
-  root.rotation.y = sec * 0.04;
+  root.rotation.y = sec * 0.045;
 
   for (let i = 0; i < PN; i++) {
-    pData[i].t += pData[i].speed * 0.006;
-    if (pData[i].t > 1) pData[i].t = 0;
-    const p = flowPos(pData[i].t, pData[i].path);
+    const d = pData[i];
+    d.t += d.speed * 0.0055;
+    if (d.t > 1) d.t = 0;
+    const p = flowPos(d.t, d.zone, d.phase);
     pPos[i * 3] = p[0];
     pPos[i * 3 + 1] = p[1];
     pPos[i * 3 + 2] = p[2];
@@ -322,22 +341,24 @@ function animate(t) {
   pGeo.attributes.position.needsUpdate = true;
 
   const pulse = 1 + Math.sin(sec * 3) * 0.12;
-  inletMark.scale.setScalar(pulse);
-  outletMark.scale.setScalar(pulse);
+  inlet.scale.setScalar(pulse);
+  outlet.scale.setScalar(pulse);
 
-  proj("z-inlet", 0, 4.5, 0);
-  proj("z-branch", 0, 2.9, 0);
-  proj("z1", 0, 0.3, -3);
-  proj("z2", 0, 0.3, -1);
-  proj("z3", 0, 0.3, 1);
-  proj("z4", 0, 0.3, 3);
-  proj("z-outman", 0, -2.5, 0);
-  proj("z-outlet", 0, -4.1, 0);
+  // Labels: physical vessel + flow logic zones
+  proj("z-inlet", -L / 2 - 0.25, 0.4, 0);
+  proj("z-manifold", -L / 2 + 1.0, 1.2, 0);
+  proj("z1", zoneXs[0], 1.5, 0);
+  proj("z2", zoneXs[1], 1.5, 0);
+  proj("z3", zoneXs[2], 1.5, 0);
+  proj("z4", zoneXs[3], 1.5, 0);
+  proj("z-core", 0, -0.2, 0);
+  proj("z-outman", L / 2 - 1.0, 1.2, 0);
+  proj("z-outlet", L / 2 + 0.25, 0.4, 0);
 
   document.getElementById("m1").textContent = (96 + Math.sin(sec * 0.6)).toFixed(0) + "%";
   document.getElementById("m2").textContent = (88 + Math.cos(sec * 0.5)).toFixed(0) + "%";
   document.getElementById("m3").textContent = "+" + (33 + Math.sin(sec * 0.4) * 3).toFixed(0) + "%";
-  document.getElementById("m4").textContent = (97 + Math.sin(sec * 0.45)).toFixed(0) + "%";
+  document.getElementById("m4").textContent = (98 + Math.sin(sec * 0.4) * 0.5).toFixed(0) + "%";
 
   controls.update();
   renderer.render(scene, camera);
