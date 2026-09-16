@@ -3,437 +3,363 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AEGIS BioNode | Technical 3D Prototype</title>
-<meta name="description" content="AEGIS BioNode – continuous dense gyroid with realistic media flow and multi-pin sensors.">
+<title>AEGIS BioNode</title>
 <style>
-:root{color-scheme:dark;--bg:#080808;--ink:#f2f2f2;--muted:#8e8e8e;--line:rgba(255,255,255,.16);--panel:rgba(10,10,10,.94);font-family:"SF Mono","Roboto Mono",ui-monospace,Menlo,Consolas,monospace}
+:root{color-scheme:dark;--bg:#080808;--ink:#f2f2f2;--muted:#8e8e8e;--line:rgba(255,255,255,.16);--panel:rgba(10,10,10,.94);font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
 *{box-sizing:border-box;margin:0}html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink)}
-#scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
-#loader{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#080808;transition:opacity .5s}
-#loader.hide{opacity:0;pointer-events:none}
-#loader .bar{width:160px;height:2px;background:#1a1a1a;margin-top:18px;overflow:hidden}
-#loader .bar i{display:block;height:100%;width:0;background:#fff;transition:width .3s}
-#loader p{font-size:10px;letter-spacing:.2em;color:#666;margin-top:12px}
-.overlay{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:300px 1fr 280px;pointer-events:none}
-.panel{pointer-events:auto;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(14px);padding:16px 14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
-.brand{font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-.brand strong{display:block;color:var(--ink);font-size:.9rem;margin-top:3px;letter-spacing:.04em}
-h1{font-size:1.25rem;font-weight:500;line-height:1.25}.lead{font-size:.73rem;line-height:1.5;color:var(--muted)}
-.section-label{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+#scene{position:fixed;inset:0;width:100%;height:100%}
+.overlay{position:relative;z-index:2;height:100%;display:grid;grid-template-columns:290px 1fr 270px;pointer-events:none}
+.panel{pointer-events:auto;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(12px);padding:14px 12px;display:flex;flex-direction:column;gap:11px;overflow-y:auto}
+.brand{font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.brand strong{display:block;color:var(--ink);font-size:.88rem;margin-top:2px}
+h1{font-size:1.2rem;font-weight:500}.lead{font-size:.72rem;line-height:1.45;color:var(--muted)}
+.section-label{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 .controls{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-button{border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:.68rem;padding:7px 5px;cursor:pointer;border-radius:2px;transition:all .15s}
+button{border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:.68rem;padding:7px 5px;cursor:pointer;border-radius:2px}
 button:hover,button.active{background:#fff;color:#000;border-color:#fff}
-.metric{border:1px solid var(--line);padding:9px;border-radius:2px}
-.metric span{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-bottom:4px}
-.metric strong{font-size:1.05rem;font-weight:500}.bar{height:3px;background:#1c1c1c;border-radius:1px;overflow:hidden}.fill{height:100%;background:#fff;transform-origin:left}
-.flow{border:1px solid var(--line);padding:10px;border-radius:2px}.flow h2{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.step{display:grid;grid-template-columns:12px 1fr;gap:7px;font-size:.68rem;line-height:1.4;color:#ccc;margin:7px 0}.node{width:5px;height:5px;margin-top:5px;border:1px solid #fff;border-radius:50%}
-.parts-list{border:1px solid var(--line);padding:10px;border-radius:2px;font-size:.66rem;line-height:1.55;color:#bbb}.parts-list b{color:#fff}
-.benefit{border:1px solid var(--line);padding:10px;border-radius:2px;font-size:.68rem;line-height:1.45;color:#bbb}.benefit strong{color:#fff;display:block;margin-bottom:4px;font-size:.7rem}
-.center-title{position:absolute;top:20px;left:50%;transform:translateX(-50%);text-align:center;pointer-events:none;z-index:3}
-.center-title .eyebrow{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
-.center-title h2{font-size:clamp(1.5rem,3.2vw,2.2rem);font-weight:400;margin-top:3px;letter-spacing:.03em}
-.footer{position:fixed;bottom:12px;left:0;right:0;z-index:3;display:flex;justify-content:center;gap:28px;font-size:.56rem;letter-spacing:.12em;color:#555;pointer-events:none}
-.callout{position:absolute;z-index:4;pointer-events:none;font-size:.6rem;letter-spacing:.07em;color:#fff;background:rgba(0,0,0,.85);border:1px solid rgba(255,255,255,.38);padding:4px 8px;border-radius:2px;white-space:nowrap;transform:translate(-50%,-130%);opacity:.96}
-.callout::after{content:'';position:absolute;left:50%;bottom:-4px;width:7px;height:7px;background:rgba(0,0,0,.85);border-right:1px solid rgba(255,255,255,.38);border-bottom:1px solid rgba(255,255,255,.38);transform:translateX(-50%) rotate(45deg)}
-@media(max-width:920px){.overlay{grid-template-columns:1fr}.left,.right{display:none}.center-title{top:14px}}
+.metric{border:1px solid var(--line);padding:8px;border-radius:2px}
+.metric span{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-bottom:3px}
+.metric strong{font-size:1rem}.bar{height:3px;background:#1c1c1c;overflow:hidden}.fill{height:100%;background:#fff;transform-origin:left}
+.flow{border:1px solid var(--line);padding:9px;border-radius:2px}.flow h2{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.step{display:grid;grid-template-columns:11px 1fr;gap:6px;font-size:.68rem;line-height:1.35;color:#ccc;margin:6px 0}.node{width:5px;height:5px;margin-top:4px;border:1px solid #fff;border-radius:50%}
+.parts-list{border:1px solid var(--line);padding:9px;border-radius:2px;font-size:.65rem;line-height:1.5;color:#bbb}.parts-list b{color:#fff}
+.benefit{border:1px solid var(--line);padding:9px;border-radius:2px;font-size:.67rem;line-height:1.4;color:#bbb}.benefit strong{color:#fff;display:block;margin-bottom:3px}
+.center-title{position:absolute;top:18px;left:50%;transform:translateX(-50%);text-align:center;pointer-events:none;z-index:3}
+.center-title .eyebrow{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.center-title h2{font-size:clamp(1.4rem,3vw,2.1rem);font-weight:400;margin-top:2px}
+.footer{position:fixed;bottom:10px;left:0;right:0;z-index:3;display:flex;justify-content:center;gap:24px;font-size:.55rem;letter-spacing:.1em;color:#555;pointer-events:none}
+.callout{position:absolute;z-index:4;pointer-events:none;font-size:.6rem;letter-spacing:.06em;color:#fff;background:rgba(0,0,0,.85);border:1px solid rgba(255,255,255,.4);padding:3px 7px;border-radius:2px;white-space:nowrap;transform:translate(-50%,-130%)}
+@media(max-width:900px){.overlay{grid-template-columns:1fr}.left,.right{display:none}}
 </style>
 </head>
 <body>
-<div id="loader"><div style="font-size:11px;letter-spacing:.18em;color:#aaa">AEGIS BIONODE</div><div class="bar"><i id="loadbar"></i></div><p id="loadtxt">BUILDING GYROID LATTICE…</p></div>
 <canvas id="scene"></canvas>
-<div class="center-title"><div class="eyebrow">Live Media Flow · Dense Gyroid · Multi-Pin Sensors</div><h2>AEGIS BioNode</h2></div>
+<div class="center-title"><div class="eyebrow">Live Media Flow · Gyroid Core · Multi-Pin Sensors</div><h2>AEGIS BioNode</h2></div>
 <div id="label-inlet" class="callout" style="display:none">INLET</div>
 <div id="label-outlet" class="callout" style="display:none">OUTLET</div>
 <div id="label-core" class="callout" style="display:none">GYROID CORE</div>
-<div id="label-vessel" class="callout" style="display:none">VESSEL HOUSING</div>
-<div id="label-s1" class="callout" style="display:none">S1 · pH · 8-PIN</div>
-<div id="label-s2" class="callout" style="display:none">S2 · dO₂ · 8-PIN</div>
-<div id="label-s3" class="callout" style="display:none">S3 · TEMP · 8-PIN</div>
-<div id="label-s4" class="callout" style="display:none">S4 · pH · 8-PIN</div>
-<div id="label-s5" class="callout" style="display:none">S5 · dO₂ · 8-PIN</div>
-<div id="label-s6" class="callout" style="display:none">S6 · TEMP · 8-PIN</div>
+<div id="label-vessel" class="callout" style="display:none">VESSEL</div>
+<div id="label-s1" class="callout" style="display:none">S1 · pH</div>
+<div id="label-s2" class="callout" style="display:none">S2 · dO₂</div>
+<div id="label-s3" class="callout" style="display:none">S3 · TEMP</div>
+<div id="label-s4" class="callout" style="display:none">S4 · pH</div>
+<div id="label-s5" class="callout" style="display:none">S5 · dO₂</div>
+<div id="label-s6" class="callout" style="display:none">S6 · TEMP</div>
 <div class="overlay">
 <aside class="panel left">
 <div class="brand">AEGIS BioNode<strong>Modular Gyroid Perfusion Bioreactor</strong></div>
 <h1>Living tissue engine.</h1>
-<p class="lead">Continuous dense gyroid core with real media flowing through the channels — inlet → lattice → outlet. Six 8-pin sterile optical sensor docks.</p>
-<div><div class="section-label">Marked Parts</div>
-<div class="parts-list"><b>1. Inlet</b> — media entry<br><b>2. Outlet</b> — product harvest<br><b>3. Vessel Housing</b> — outer chamber<br><b>4. Gyroid Core</b> — continuous TPMS lattice<br><b>5–10. Sensor Docks</b> — 6× 8-pin sterile ports<br>&nbsp;&nbsp;&nbsp;S1/S4 pH · S2/S5 dO₂ · S3/S6 Temp</div></div>
-<div><div class="section-label">View Modes</div>
-<div class="controls"><button class="active" data-mode="solid">Solid</button><button data-mode="wire">Wire</button><button data-mode="xray">X-Ray</button><button data-mode="core">Core Only</button></div></div>
-<div class="benefit"><strong>Live media flow</strong>White particle streams and flow ribbons show culture media moving through the gyroid channels — continuous low-shear perfusion from inlet to outlet.</div>
+<p class="lead">Gyroid core with live media flowing inlet → channels → outlet. Six 8-pin sterile sensor docks.</p>
+<div><div class="section-label">Parts</div>
+<div class="parts-list"><b>1. Inlet</b> — media entry<br><b>2. Outlet</b> — harvest<br><b>3. Vessel</b> — housing<br><b>4. Gyroid Core</b> — TPMS lattice<br><b>5–10. Sensors</b> — 6× 8-pin docks</div></div>
+<div><div class="section-label">View</div>
+<div class="controls"><button class="active" data-mode="solid">Solid</button><button data-mode="wire">Wire</button><button data-mode="xray">X-Ray</button><button data-mode="core">Core</button></div></div>
+<div class="benefit"><strong>Live media flow</strong>White streams move through the gyroid — continuous low-shear perfusion from inlet to outlet.</div>
 </aside>
 <div></div>
 <aside class="panel right">
-<div class="metric"><span>Perfusion Uniformity <strong id="m1">97.2%</strong></span><div class="bar"><div class="fill" id="b1" style="transform:scaleX(.972)"></div></div></div>
-<div class="metric"><span>Shear Reduction <strong id="m2">89.4%</strong></span><div class="bar"><div class="fill" id="b2" style="transform:scaleX(.894)"></div></div></div>
-<div class="metric"><span>Product Formation Gain <strong id="m4">+36%</strong></span><div class="bar"><div class="fill" id="b4" style="transform:scaleX(.8)"></div></div></div>
-<div class="metric"><span>Multi-Sensor Accuracy <strong id="m3">99.5%</strong></span><div class="bar"><div class="fill" id="b3" style="transform:scaleX(.995)"></div></div></div>
+<div class="metric"><span>Perfusion Uniformity <strong id="m1">97%</strong></span><div class="bar"><div class="fill" id="b1" style="transform:scaleX(.97)"></div></div></div>
+<div class="metric"><span>Shear Reduction <strong id="m2">89%</strong></span><div class="bar"><div class="fill" id="b2" style="transform:scaleX(.89)"></div></div></div>
+<div class="metric"><span>Product Gain <strong id="m4">+35%</strong></span><div class="bar"><div class="fill" id="b4" style="transform:scaleX(.78)"></div></div></div>
+<div class="metric"><span>Sensor Accuracy <strong id="m3">99%</strong></span><div class="bar"><div class="fill" id="b3" style="transform:scaleX(.99)"></div></div></div>
 <div class="flow"><h2>Flow Path</h2>
 <div class="step"><span class="node"></span><span><b>INLET</b> — media enters</span></div>
-<div class="step"><span class="node"></span><span><b>GYROID</b> — low-shear channels</span></div>
-<div class="step"><span class="node"></span><span><b>SENSORS</b> — spatial feedback</span></div>
-<div class="step"><span class="node"></span><span><b>OUTLET</b> — product harvest</span></div></div>
+<div class="step"><span class="node"></span><span><b>GYROID</b> — channel flow</span></div>
+<div class="step"><span class="node"></span><span><b>SENSORS</b> — feedback</span></div>
+<div class="step"><span class="node"></span><span><b>OUTLET</b> — harvest</span></div></div>
 </aside>
 </div>
-<div class="footer"><span>DRAG TO ROTATE</span><span>SCROLL TO ZOOM</span><span>1 SOLID · 2 WIRE · 3 X-RAY · 4 CORE</span></div>
+<div class="footer"><span>DRAG TO ROTATE</span><span>SCROLL TO ZOOM</span><span>1–4 VIEW MODES</span></div>
 <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.165.0/build/three.module.js"}}</script>
 <script type="module">
 import * as THREE from "three";
 import { OrbitControls } from "https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js";
 
-const loadbar=document.getElementById('loadbar'),loadtxt=document.getElementById('loadtxt'),loader=document.getElementById('loader');
-function setLoad(p,t){loadbar.style.width=(p*100)+'%';if(t)loadtxt.textContent=t}
-
-const canvas=document.querySelector('#scene');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.setSize(innerWidth,innerHeight);
+const canvas = document.querySelector("#scene");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
 renderer.setClearColor(0x080808);
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.15;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,100);
-camera.position.set(10.2,5.4,12);
-const controls=new OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;controls.dampingFactor=.055;controls.autoRotate=true;controls.autoRotateSpeed=.16;
-controls.enablePan=false;controls.minDistance=6.5;controls.maxDistance=24;controls.target.set(0,.08,0);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(9.5, 5, 11.5);
 
-scene.add(new THREE.AmbientLight(0xffffff,.42));
-const key=new THREE.DirectionalLight(0xffffff,1.05);key.position.set(6,10,8);scene.add(key);
-const fill=new THREE.DirectionalLight(0xffffff,.28);fill.position.set(-7,3,-4);scene.add(fill);
-const rim=new THREE.DirectionalLight(0xffffff,.4);rim.position.set(-3,-4,6);scene.add(rim);
-scene.add(new THREE.HemisphereLight(0xffffff,0x111111,.25));
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.2;
+controls.enablePan = false;
+controls.minDistance = 6;
+controls.maxDistance = 24;
+controls.target.set(0, 0.1, 0);
 
-const group=new THREE.Group();scene.add(group);
-const VESSEL_RADIUS=3.2,VESSEL_LENGTH=6.8,GYROID_MAX_R=2.72;
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const key = new THREE.DirectionalLight(0xffffff, 1); key.position.set(5, 9, 7); scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 0.3); fill.position.set(-6, 2, -5); scene.add(fill);
+const rim = new THREE.DirectionalLight(0xffffff, 0.35); rim.position.set(-2, -3, 5); scene.add(rim);
 
-const matShell=new THREE.MeshPhysicalMaterial({color:0x1e1e1e,metalness:.15,roughness:.45,transparent:true,opacity:.62,side:THREE.DoubleSide,transmission:.06,thickness:.4});
-const matGyroid=new THREE.MeshPhysicalMaterial({color:0xe8e8e8,metalness:.16,roughness:.34,side:THREE.DoubleSide,clearcoat:.2,clearcoatRoughness:.45,transparent:true,opacity:.88});
-const matGyroidWire=new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:.55});
-const matXray=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.05,side:THREE.DoubleSide,depthWrite:false});
-const matMarker=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.5,roughness:.28,metalness:.25});
-const matArrow=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.28,roughness:.35,metalness:.2});
-const matDock=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.2,metalness:.6});
-const matCart=new THREE.MeshStandardMaterial({color:0xe4e4e4,roughness:.36,metalness:.3});
-const matPin=new THREE.MeshStandardMaterial({color:0xf8f8f8,metalness:.82,roughness:.18,emissive:0xffffff,emissiveIntensity:.1});
-const matOptic=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xffffff,emissiveIntensity:.55,transparent:true,opacity:.95});
-const matCollar=new THREE.MeshStandardMaterial({color:0xd0d0d0,roughness:.28,metalness:.45});
+const group = new THREE.Group();
+scene.add(group);
 
-function gyroid(x,y,z){return Math.sin(x)*Math.cos(y)+Math.sin(y)*Math.cos(z)+Math.sin(z)*Math.cos(x)}
+const VR = 3.2, VL = 6.8, GR = 2.5;
 
-function buildGyroid(res=30,wall=.2){
-  setLoad(.15,'SAMPLING SCALAR FIELD…');
-  const freq=2.35,domain=Math.PI*2*freq,cell=domain/(res-1),half=(res-1)/2;
-  const verts=[],keyMap=new Map();
-  function toWorld(x,y,z){
-    let px=(x/domain)*VESSEL_LENGTH*.88,py=(y/domain)*GYROID_MAX_R*2,pz=(z/domain)*GYROID_MAX_R*2;
-    const r=Math.sqrt(py*py+pz*pz);if(r>GYROID_MAX_R){const s=GYROID_MAX_R/r;py*=s;pz*=s}
-    const maxX=VESSEL_LENGTH*.5-.28;if(Math.abs(px)>maxX)px=Math.sign(px)*maxX;
-    return [px,py,pz];
-  }
-  function addV(x,y,z){
-    const [px,py,pz]=toWorld(x,y,z);
-    const key=px.toFixed(3)+','+py.toFixed(3)+','+pz.toFixed(3);
-    if(keyMap.has(key))return keyMap.get(key);
-    const id=verts.length/3;verts.push(px,py,pz);keyMap.set(key,id);return id;
-  }
-  for(const target of [wall,-wall]){
-    for(let i=0;i<res;i++){
-      if(i%5===0)setLoad(.2+.3*(i/res),'EXTRACTING ISOSURFACE…');
-      for(let j=0;j<res;j++)for(let k=0;k<res;k++){
-        let px=(i-half)*cell,py=(j-half)*cell,pz=(k-half)*cell;
-        for(let s=0;s<5;s++){
-          const g=gyroid(px,py,pz)-target,eps=.035;
-          const gx=(gyroid(px+eps,py,pz)-gyroid(px-eps,py,pz))/(2*eps);
-          const gy=(gyroid(px,py+eps,pz)-gyroid(px,py-eps,pz))/(2*eps);
-          const gz=(gyroid(px,py,pz+eps)-gyroid(px,py,pz-eps))/(2*eps);
-          const len=Math.sqrt(gx*gx+gy*gy+gz*gz)+1e-9;
-          px-=(g/len)*gx*.45;py-=(g/len)*gy*.45;pz-=(g/len)*gz*.45;
+const matShell = new THREE.MeshStandardMaterial({ color: 0x222222, transparent: true, opacity: 0.55, side: THREE.DoubleSide, roughness: 0.5, metalness: 0.1 });
+const matGyro = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, roughness: 0.4, metalness: 0.15, side: THREE.DoubleSide, transparent: true, opacity: 0.75 });
+const matWire = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.6 });
+const matXray = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.06, side: THREE.DoubleSide, depthWrite: false });
+const matMark = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5, roughness: 0.3 });
+const matArr = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.3, roughness: 0.4 });
+const matDock = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.5 });
+const matCart = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.4, metalness: 0.25 });
+const matPin = new THREE.MeshStandardMaterial({ color: 0xf0f0f0, metalness: 0.7, roughness: 0.25 });
+const matOpt = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.5, transparent: true, opacity: 0.9 });
+
+// Fast gyroid: sample isosurface points + short struts (reliable, no freeze)
+function buildGyroid() {
+  const pts = [];
+  const freq = 2.0;
+  const n = 14;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      for (let k = 0; k < n; k++) {
+        const x = ((i / (n - 1)) - 0.5) * Math.PI * 2 * freq;
+        const y = ((j / (n - 1)) - 0.5) * Math.PI * 2 * freq;
+        const z = ((k / (n - 1)) - 0.5) * Math.PI * 2 * freq;
+        const g = Math.sin(x) * Math.cos(y) + Math.sin(y) * Math.cos(z) + Math.sin(z) * Math.cos(x);
+        if (Math.abs(g) < 0.35) {
+          let px = ((i / (n - 1)) - 0.5) * VL * 0.85;
+          let py = ((j / (n - 1)) - 0.5) * GR * 2;
+          let pz = ((k / (n - 1)) - 0.5) * GR * 2;
+          const r = Math.sqrt(py * py + pz * pz);
+          if (r > GR) { py *= GR / r; pz *= GR / r; }
+          pts.push(new THREE.Vector3(px, py, pz));
         }
-        if(Math.abs(gyroid(px,py,pz)-target)<.18)addV(px,py,pz);
       }
     }
   }
-  setLoad(.65,'TRIANGULATING…');
-  const pts=[];for(let i=0;i<verts.length;i+=3)pts.push(new THREE.Vector3(verts[i],verts[i+1],verts[i+2]));
-  const cellSize=.28,hash=new Map();
-  function hkey(p){return Math.floor(p.x/cellSize)+','+Math.floor(p.y/cellSize)+','+Math.floor(p.z/cellSize)}
-  pts.forEach((p,i)=>{const k=hkey(p);if(!hash.has(k))hash.set(k,[]);hash.get(k).push(i)});
-  const indices=[],maxD=.3;
-  for(let i=0;i<pts.length;i++){
-    if(i%600===0)setLoad(.65+.25*(i/pts.length),'CONNECTING SURFACE…');
-    const p=pts[i],cx=Math.floor(p.x/cellSize),cy=Math.floor(p.y/cellSize),cz=Math.floor(p.z/cellSize),nb=[];
-    for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++){
-      const bucket=hash.get((cx+dx)+','+(cy+dy)+','+(cz+dz));if(!bucket)continue;
-      for(const j of bucket){if(j<=i)continue;const d=p.distanceTo(pts[j]);if(d<maxD)nb.push({j,d})}
-    }
-    nb.sort((a,b)=>a.d-b.d);
-    for(let a=0;a<Math.min(5,nb.length);a++)for(let b=a+1;b<Math.min(6,nb.length);b++){
-      if(pts[nb[a].j].distanceTo(pts[nb[b].j])<maxD*1.15)indices.push(i,nb[a].j,nb[b].j);
+  const g = new THREE.Group();
+  const strutMat = matGyro;
+  // Connect nearby points with thin cylinders (lattice look)
+  for (let i = 0; i < pts.length; i++) {
+    let connected = 0;
+    for (let j = i + 1; j < pts.length && connected < 3; j++) {
+      const d = pts[i].distanceTo(pts[j]);
+      if (d > 0.15 && d < 0.55) {
+        const dir = pts[j].clone().sub(pts[i]);
+        const mid = pts[i].clone().add(pts[j]).multiplyScalar(0.5);
+        const c = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, d, 5), strutMat);
+        c.position.copy(mid);
+        c.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+        g.add(c);
+        connected++;
+      }
     }
   }
-  setLoad(.95,'COMPUTING NORMALS…');
-  const geo=new THREE.BufferGeometry();
-  geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
-  geo.setIndex(indices);geo.computeVertexNormals();return geo;
-}
-
-setLoad(.05,'INITIALIZING…');
-await new Promise(r=>setTimeout(r,30));
-const gyroidMesh=new THREE.Mesh(buildGyroid(28,.2),matGyroid);
-group.add(gyroidMesh);
-setLoad(1,'READY');
-
-const shellMesh=new THREE.Mesh(new THREE.CylinderGeometry(VESSEL_RADIUS,VESSEL_RADIUS,VESSEL_LENGTH,72,1,true),matShell);
-shellMesh.rotation.z=Math.PI/2;group.add(shellMesh);
-const capGeo=new THREE.CircleGeometry(VESSEL_RADIUS,72);
-const cap1=new THREE.Mesh(capGeo,matShell.clone());cap1.position.x=VESSEL_LENGTH*.5;cap1.rotation.y=Math.PI/2;group.add(cap1);
-const cap2=new THREE.Mesh(capGeo,matShell.clone());cap2.position.x=-VESSEL_LENGTH*.5;cap2.rotation.y=-Math.PI/2;group.add(cap2);
-function addEdges(mesh,op=.34){
-  const e=new THREE.EdgesGeometry(mesh.geometry,20);
-  const l=new THREE.LineSegments(e,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:op}));
-  l.position.copy(mesh.position);l.rotation.copy(mesh.rotation);group.add(l);return l;
-}
-const shellEdges=addEdges(shellMesh,.32);
-
-function makeArrow(dir=1){
-  const g=new THREE.Group();
-  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.65,10),matArrow);
-  shaft.rotation.z=Math.PI/2;shaft.position.x=dir*.32;g.add(shaft);
-  const head=new THREE.Mesh(new THREE.ConeGeometry(.15,.3,12),matArrow);
-  head.rotation.z=dir>0?-Math.PI/2:Math.PI/2;head.position.x=dir*.8;g.add(head);
-  return g;
-}
-const inletMarker=new THREE.Mesh(new THREE.SphereGeometry(.16,18,18),matMarker);
-inletMarker.position.set(-VESSEL_LENGTH*.5-.12,0,0);group.add(inletMarker);
-const inletArrow=makeArrow(-1);inletArrow.position.set(-VESSEL_LENGTH*.5-1.05,0,0);group.add(inletArrow);
-const outletMarker=new THREE.Mesh(new THREE.SphereGeometry(.16,18,18),matMarker);
-outletMarker.position.set(VESSEL_LENGTH*.5+.12,0,0);group.add(outletMarker);
-const outletArrow=makeArrow(1);outletArrow.position.set(VESSEL_LENGTH*.5+1.05,0,0);group.add(outletArrow);
-
-function makeSensorDock(){
-  const g=new THREE.Group();
-  const flange=new THREE.Mesh(new THREE.CylinderGeometry(.36,.4,.07,28),matCollar);flange.position.y=.035;g.add(flange);
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(.3,.032,12,32),matDock);ring.rotation.x=Math.PI/2;ring.position.y=.09;g.add(ring);
-  const body1=new THREE.Mesh(new THREE.CylinderGeometry(.19,.23,.26,18),matCart);body1.position.y=.26;g.add(body1);
-  const body2=new THREE.Mesh(new THREE.CylinderGeometry(.15,.19,.16,18),matCart);body2.position.y=.45;g.add(body2);
-  const pinGeo=new THREE.CylinderGeometry(.018,.015,.18,7);
-  [[-.065,-.038],[-.022,-.038],[.022,-.038],[.065,-.038],[-.065,.038],[-.022,.038],[.022,.038],[.065,.038]].forEach(([px,pz])=>{
-    const pin=new THREE.Mesh(pinGeo,matPin);pin.position.set(px,.58,pz);g.add(pin);
+  // Small nodes at junctions
+  const nodeGeo = new THREE.SphereGeometry(0.05, 6, 6);
+  pts.forEach(p => {
+    const n = new THREE.Mesh(nodeGeo, strutMat);
+    n.position.copy(p);
+    g.add(n);
   });
-  const optic=new THREE.Mesh(new THREE.CircleGeometry(.05,14),matOptic.clone());
-  optic.position.y=.6;optic.rotation.x=-Math.PI/2;g.add(optic);g.userData.optic=optic;
   return g;
 }
-const sensorConfigs=[
-  {angle:0,x:-1.8,label:'label-s1'},{angle:Math.PI,x:-1.8,label:'label-s4'},
-  {angle:Math.PI/2,x:0,label:'label-s2'},{angle:-Math.PI/2,x:0,label:'label-s5'},
-  {angle:Math.PI/4,x:1.8,label:'label-s3'},{angle:-Math.PI*3/4,x:1.8,label:'label-s6'}
+
+const gyroidGroup = buildGyroid();
+group.add(gyroidGroup);
+
+// Vessel
+const shell = new THREE.Mesh(new THREE.CylinderGeometry(VR, VR, VL, 48, 1, true), matShell);
+shell.rotation.z = Math.PI / 2;
+group.add(shell);
+const capGeo = new THREE.CircleGeometry(VR, 48);
+const cap1 = new THREE.Mesh(capGeo, matShell.clone());
+cap1.position.x = VL * 0.5; cap1.rotation.y = Math.PI / 2; group.add(cap1);
+const cap2 = new THREE.Mesh(capGeo, matShell.clone());
+cap2.position.x = -VL * 0.5; cap2.rotation.y = -Math.PI / 2; group.add(cap2);
+const edges = new THREE.LineSegments(new THREE.EdgesGeometry(shell.geometry, 20), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 }));
+edges.rotation.z = Math.PI / 2; group.add(edges);
+
+// Inlet / outlet
+function arrow(dir) {
+  const g = new THREE.Group();
+  const s = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.6, 8), matArr);
+  s.rotation.z = Math.PI / 2; s.position.x = dir * 0.3; g.add(s);
+  const h = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.28, 10), matArr);
+  h.rotation.z = dir > 0 ? -Math.PI / 2 : Math.PI / 2; h.position.x = dir * 0.75; g.add(h);
+  return g;
+}
+const inletM = new THREE.Mesh(new THREE.SphereGeometry(0.15, 14, 14), matMark);
+inletM.position.set(-VL * 0.5 - 0.1, 0, 0); group.add(inletM);
+const inletA = arrow(-1); inletA.position.set(-VL * 0.5 - 1.0, 0, 0); group.add(inletA);
+const outletM = new THREE.Mesh(new THREE.SphereGeometry(0.15, 14, 14), matMark);
+outletM.position.set(VL * 0.5 + 0.1, 0, 0); group.add(outletM);
+const outletA = arrow(1); outletA.position.set(VL * 0.5 + 1.0, 0, 0); group.add(outletA);
+
+// Sensors
+function sensor() {
+  const g = new THREE.Group();
+  g.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.06, 20), matCart), { position: new THREE.Vector3(0, 0.03, 0) }));
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.03, 8, 24), matDock);
+  ring.rotation.x = Math.PI / 2; ring.position.y = 0.08; g.add(ring);
+  g.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.24, 14), matCart), { position: new THREE.Vector3(0, 0.24, 0) }));
+  g.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.18, 0.14, 14), matCart), { position: new THREE.Vector3(0, 0.42, 0) }));
+  const pg = new THREE.CylinderGeometry(0.016, 0.014, 0.16, 5);
+  [[-0.06,-0.035],[-0.02,-0.035],[0.02,-0.035],[0.06,-0.035],[-0.06,0.035],[-0.02,0.035],[0.02,0.035],[0.06,0.035]].forEach(([x,z]) => {
+    const p = new THREE.Mesh(pg, matPin); p.position.set(x, 0.55, z); g.add(p);
+  });
+  const opt = new THREE.Mesh(new THREE.CircleGeometry(0.045, 10), matOpt.clone());
+  opt.position.y = 0.57; opt.rotation.x = -Math.PI / 2; g.add(opt); g.userData.opt = opt;
+  return g;
+}
+const scfg = [
+  { a: 0, x: -1.8, id: "label-s1" }, { a: Math.PI, x: -1.8, id: "label-s4" },
+  { a: Math.PI / 2, x: 0, id: "label-s2" }, { a: -Math.PI / 2, x: 0, id: "label-s5" },
+  { a: Math.PI / 4, x: 1.8, id: "label-s3" }, { a: -Math.PI * 3 / 4, x: 1.8, id: "label-s6" }
 ];
-const sensorDocks=[],sensorWorldTargets=[];
-sensorConfigs.forEach(cfg=>{
-  const dock=makeSensorDock();const r=VESSEL_RADIUS-.04;
-  dock.position.set(cfg.x,Math.cos(cfg.angle)*r,Math.sin(cfg.angle)*r);
-  dock.lookAt(cfg.x,Math.cos(cfg.angle)*r*2.2,Math.sin(cfg.angle)*r*2.2);
-  dock.rotateX(Math.PI/2);group.add(dock);sensorDocks.push(dock);sensorWorldTargets.push({dock,labelId:cfg.label});
+const docks = [];
+scfg.forEach(c => {
+  const d = sensor();
+  const r = VR - 0.04;
+  d.position.set(c.x, Math.cos(c.a) * r, Math.sin(c.a) * r);
+  d.lookAt(c.x, Math.cos(c.a) * r * 2, Math.sin(c.a) * r * 2);
+  d.rotateX(Math.PI / 2);
+  group.add(d); docks.push({ mesh: d, id: c.id });
 });
 
-// ═══ REALISTIC MEDIA FLOW ═══════════════════════════════════════════════════
-// Dense particle field + flow ribbons that travel inlet → gyroid channels → outlet
-
-const FLOW_N = 420;
-const flowGeo = new THREE.BufferGeometry();
-const flowPos = new Float32Array(FLOW_N * 3);
-const flowCol = new Float32Array(FLOW_N * 3);
-const flowSize = new Float32Array(FLOW_N);
-const flowState = []; // { progress 0-1, speed, phaseY, phaseZ, ampY, ampZ, r0 }
-
-function spawnParticle(i, atStart) {
-  const progress = atStart ? Math.random() * 0.02 : Math.random();
-  const speed = 0.12 + Math.random() * 0.22;
-  const phaseY = Math.random() * Math.PI * 2;
-  const phaseZ = Math.random() * Math.PI * 2;
-  const ampY = 0.15 + Math.random() * 0.55;
-  const ampZ = 0.15 + Math.random() * 0.55;
-  const r0 = (Math.random() ** 0.7) * GYROID_MAX_R * 0.82; // denser near axis
-  flowState[i] = { progress, speed, phaseY, phaseZ, ampY, ampZ, r0 };
-  flowSize[i] = 0.018 + Math.random() * 0.035;
-}
-
-for (let i = 0; i < FLOW_N; i++) spawnParticle(i, false);
-
-function updateParticlePos(i, t) {
-  const s = flowState[i];
-  const x = -VESSEL_LENGTH * 0.5 + s.progress * VESSEL_LENGTH;
-  // Channel-like oscillation (media weaving through gyroid passages)
-  const weave = Math.sin(s.progress * Math.PI * 4 + s.phaseY);
-  const y = Math.cos(s.phaseY + s.progress * 3.2) * s.r0 * (0.7 + 0.3 * weave) * s.ampY / 0.5;
-  const z = Math.sin(s.phaseZ + s.progress * 2.8) * s.r0 * (0.7 + 0.3 * Math.cos(s.progress * 5 + s.phaseZ)) * s.ampZ / 0.5;
-  // Clamp inside vessel
-  const r = Math.sqrt(y * y + z * z);
-  const scale = r > GYROID_MAX_R * 0.92 ? (GYROID_MAX_R * 0.92) / r : 1;
-  flowPos[i * 3] = x;
-  flowPos[i * 3 + 1] = y * scale;
-  flowPos[i * 3 + 2] = z * scale;
-  // Fade in at inlet, full in middle, fade at outlet
-  const edge = Math.min(s.progress * 4, (1 - s.progress) * 4, 1);
-  const bright = 0.55 + 0.45 * edge;
-  flowCol[i * 3] = bright;
-  flowCol[i * 3 + 1] = bright;
-  flowCol[i * 3 + 2] = bright;
-}
-
-for (let i = 0; i < FLOW_N; i++) updateParticlePos(i, 0);
-
-flowGeo.setAttribute('position', new THREE.BufferAttribute(flowPos, 3));
-flowGeo.setAttribute('color', new THREE.BufferAttribute(flowCol, 3));
-flowGeo.setAttribute('size', new THREE.BufferAttribute(flowSize, 1));
-
-const flowMat = new THREE.PointsMaterial({
-  size: 0.04,
-  vertexColors: true,
-  transparent: true,
-  opacity: 0.85,
-  depthWrite: false,
-  sizeAttenuation: true,
-  blending: THREE.AdditiveBlending
-});
-const flowParticles = new THREE.Points(flowGeo, flowMat);
-group.add(flowParticles);
-
-// Flow ribbons (streamlines) — continuous white curves through the volume
-const RIBBON_COUNT = 18;
-const ribbonGroup = new THREE.Group();
-group.add(ribbonGroup);
-const ribbonMats = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22 });
-const ribbonData = [];
-
-for (let r = 0; r < RIBBON_COUNT; r++) {
-  const segs = 48;
-  const geo = new THREE.BufferGeometry();
-  const pos = new Float32Array(segs * 3);
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const line = new THREE.Line(geo, ribbonMats.clone());
-  ribbonGroup.add(line);
-  ribbonData.push({
-    line, pos, segs,
-    phaseY: Math.random() * Math.PI * 2,
-    phaseZ: Math.random() * Math.PI * 2,
-    r0: 0.4 + Math.random() * 1.8,
-    offset: Math.random()
+// ===== LIVE MEDIA FLOW (simple, visible, reliable) =====
+const FN = 280;
+const fPos = new Float32Array(FN * 3);
+const fData = [];
+for (let i = 0; i < FN; i++) {
+  fData.push({
+    t: Math.random(),
+    spd: 0.35 + Math.random() * 0.55,
+    py: Math.random() * Math.PI * 2,
+    pz: Math.random() * Math.PI * 2,
+    r: Math.random() * GR * 0.75
   });
 }
+const fGeo = new THREE.BufferGeometry();
+fGeo.setAttribute("position", new THREE.BufferAttribute(fPos, 3));
+const flowPts = new THREE.Points(fGeo, new THREE.PointsMaterial({
+  color: 0xffffff, size: 0.06, transparent: true, opacity: 0.9,
+  depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true
+}));
+group.add(flowPts);
 
-function updateRibbons(t) {
-  for (const rb of ribbonData) {
-    for (let i = 0; i < rb.segs; i++) {
-      const u = (i / (rb.segs - 1) + t * 0.08 + rb.offset) % 1;
-      const x = -VESSEL_LENGTH * 0.5 + u * VESSEL_LENGTH;
-      const y = Math.cos(rb.phaseY + u * 3.5) * rb.r0 * (0.85 + 0.15 * Math.sin(u * 8));
-      const z = Math.sin(rb.phaseZ + u * 3.0) * rb.r0 * (0.85 + 0.15 * Math.cos(u * 7));
-      const rad = Math.sqrt(y * y + z * z);
-      const sc = rad > GYROID_MAX_R * 0.9 ? (GYROID_MAX_R * 0.9) / rad : 1;
-      rb.pos[i * 3] = x;
-      rb.pos[i * 3 + 1] = y * sc;
-      rb.pos[i * 3 + 2] = z * sc;
-    }
-    rb.line.geometry.attributes.position.needsUpdate = true;
-  }
+// Flow ribbons
+const ribbons = [];
+for (let r = 0; r < 12; r++) {
+  const segs = 40;
+  const pos = new Float32Array(segs * 3);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.28 }));
+  group.add(line);
+  ribbons.push({ pos, segs, line, py: Math.random() * 6.28, pz: Math.random() * 6.28, r: 0.5 + Math.random() * 1.6, off: Math.random() });
 }
 
-const grid = new THREE.GridHelper(24, 48, 0x222222, 0x121212);
-grid.position.y = -4.6; scene.add(grid);
+const grid = new THREE.GridHelper(22, 44, 0x222222, 0x121212);
+grid.position.y = -4.5; scene.add(grid);
 
-function projectLabel(el, wp) {
+function proj(el, wp) {
   const v = wp.clone().project(camera);
-  if (v.z > 1) { el.style.display = 'none'; return; }
-  el.style.display = 'block';
-  el.style.left = ((v.x * 0.5 + 0.5) * innerWidth) + 'px';
-  el.style.top = ((-v.y * 0.5 + 0.5) * innerHeight) + 'px';
+  if (v.z > 1) { el.style.display = "none"; return; }
+  el.style.display = "block";
+  el.style.left = ((v.x * 0.5 + 0.5) * innerWidth) + "px";
+  el.style.top = ((-v.y * 0.5 + 0.5) * innerHeight) + "px";
 }
 
-let mode = 'solid';
-function setMode(next) {
-  mode = next;
-  document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-  gyroidMesh.material = mode === 'wire' ? matGyroidWire : matGyroid;
-  gyroidMesh.visible = true;
-  shellMesh.visible = mode !== 'core';
-  shellMesh.material = mode === 'xray' ? matXray : matShell;
-  if (mode === 'solid') shellMesh.material.opacity = 0.62;
-  cap1.visible = mode !== 'core' && mode !== 'wire';
-  cap2.visible = mode !== 'core' && mode !== 'wire';
-  shellEdges.visible = mode !== 'core';
-  shellEdges.material.opacity = mode === 'wire' ? 0.85 : 0.3;
-  sensorDocks.forEach(d => d.visible = mode !== 'core');
-  flowParticles.visible = true;
-  ribbonGroup.visible = mode !== 'wire';
+let mode = "solid";
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("active", b.dataset.mode === m));
+  gyroidGroup.visible = true;
+  gyroidGroup.traverse(c => {
+    if (c.isMesh) c.material = m === "wire" ? matWire : matGyro;
+  });
+  shell.visible = m !== "core";
+  shell.material = m === "xray" ? matXray : matShell;
+  if (m === "solid") shell.material.opacity = 0.55;
+  cap1.visible = cap2.visible = m !== "core" && m !== "wire";
+  edges.visible = m !== "core";
+  docks.forEach(d => d.mesh.visible = m !== "core");
 }
-document.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
-addEventListener('keydown', e => {
-  if (e.key === '1') setMode('solid');
-  if (e.key === '2') setMode('wire');
-  if (e.key === '3') setMode('xray');
-  if (e.key === '4') setMode('core');
+document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+addEventListener("keydown", e => {
+  if (e.key === "1") setMode("solid");
+  if (e.key === "2") setMode("wire");
+  if (e.key === "3") setMode("xray");
+  if (e.key === "4") setMode("core");
 });
 
-const m1 = document.querySelector('#m1'), m2 = document.querySelector('#m2');
-const m3 = document.querySelector('#m3'), m4 = document.querySelector('#m4');
-const b1 = document.querySelector('#b1'), b2 = document.querySelector('#b2');
-const b3 = document.querySelector('#b3'), b4 = document.querySelector('#b4');
+const m1 = document.querySelector("#m1"), m2 = document.querySelector("#m2");
+const m3 = document.querySelector("#m3"), m4 = document.querySelector("#m4");
+const b1 = document.querySelector("#b1"), b2 = document.querySelector("#b2");
+const b3 = document.querySelector("#b3"), b4 = document.querySelector("#b4");
 
 function fit() {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
-  group.scale.setScalar(innerWidth < 700 ? 0.6 : 1);
+  group.scale.setScalar(innerWidth < 700 ? 0.62 : 1);
 }
-fit(); addEventListener('resize', fit);
-setTimeout(() => loader.classList.add('hide'), 180);
+fit(); addEventListener("resize", fit);
 
 function animate(ms) {
   const t = ms * 0.001;
-  group.rotation.y = t * 0.038;
+  group.rotation.y = t * 0.04;
 
-  // Advance media particles
-  for (let i = 0; i < FLOW_N; i++) {
-    flowState[i].progress += flowState[i].speed * 0.008;
-    if (flowState[i].progress >= 1) spawnParticle(i, true);
-    updateParticlePos(i, t);
+  // Media particles: inlet → outlet through channels
+  for (let i = 0; i < FN; i++) {
+    const d = fData[i];
+    d.t += d.spd * 0.006;
+    if (d.t > 1) { d.t = 0; d.r = Math.random() * GR * 0.75; }
+    const x = -VL * 0.5 + d.t * VL;
+    const y = Math.cos(d.py + d.t * 4) * d.r;
+    const z = Math.sin(d.pz + d.t * 3.5) * d.r;
+    fPos[i * 3] = x;
+    fPos[i * 3 + 1] = y;
+    fPos[i * 3 + 2] = z;
   }
-  flowGeo.attributes.position.needsUpdate = true;
-  flowGeo.attributes.color.needsUpdate = true;
+  fGeo.attributes.position.needsUpdate = true;
 
-  updateRibbons(t);
+  // Ribbons
+  for (const rb of ribbons) {
+    for (let i = 0; i < rb.segs; i++) {
+      const u = (i / (rb.segs - 1) + t * 0.1 + rb.off) % 1;
+      rb.pos[i * 3] = -VL * 0.5 + u * VL;
+      rb.pos[i * 3 + 1] = Math.cos(rb.py + u * 4) * rb.r;
+      rb.pos[i * 3 + 2] = Math.sin(rb.pz + u * 3.5) * rb.r;
+    }
+    rb.line.geometry.attributes.position.needsUpdate = true;
+  }
 
-  const pulse = 1 + Math.sin(t * 2.8) * 0.12;
-  inletMarker.scale.setScalar(pulse);
-  outletMarker.scale.setScalar(pulse);
-  sensorDocks.forEach((d, i) => {
-    if (d.userData.optic) d.userData.optic.material.emissiveIntensity = 0.35 + Math.sin(t * 2.4 + i) * 0.3;
+  const pulse = 1 + Math.sin(t * 3) * 0.12;
+  inletM.scale.setScalar(pulse);
+  outletM.scale.setScalar(pulse);
+  docks.forEach((d, i) => {
+    if (d.mesh.userData.opt) d.mesh.userData.opt.material.emissiveIntensity = 0.35 + Math.sin(t * 2.5 + i) * 0.3;
   });
 
-  projectLabel(document.getElementById('label-inlet'), inletMarker.getWorldPosition(new THREE.Vector3()));
-  projectLabel(document.getElementById('label-outlet'), outletMarker.getWorldPosition(new THREE.Vector3()));
-  projectLabel(document.getElementById('label-core'), gyroidMesh.getWorldPosition(new THREE.Vector3()));
-  projectLabel(document.getElementById('label-vessel'), new THREE.Vector3(0, VESSEL_RADIUS + 0.35, 0).applyMatrix4(group.matrixWorld));
-  sensorWorldTargets.forEach(st => {
-    const el = document.getElementById(st.labelId);
-    if (el) projectLabel(el, st.dock.getWorldPosition(new THREE.Vector3()));
-  });
+  proj(document.getElementById("label-inlet"), inletM.getWorldPosition(new THREE.Vector3()));
+  proj(document.getElementById("label-outlet"), outletM.getWorldPosition(new THREE.Vector3()));
+  proj(document.getElementById("label-core"), new THREE.Vector3(0, 0, 0).applyMatrix4(group.matrixWorld));
+  proj(document.getElementById("label-vessel"), new THREE.Vector3(0, VR + 0.3, 0).applyMatrix4(group.matrixWorld));
+  docks.forEach(d => proj(document.getElementById(d.id), d.mesh.getWorldPosition(new THREE.Vector3())));
 
-  const a = 96.8 + Math.sin(t * 0.6) * 0.8;
-  const b = 89 + Math.cos(t * 0.45) * 0.7;
-  const c = 99.3 + Math.sin(t * 0.5) * 0.2;
-  const d = 34 + Math.sin(t * 0.38) * 3.5;
-  m1.textContent = a.toFixed(1) + '%'; m2.textContent = b.toFixed(1) + '%';
-  m3.textContent = c.toFixed(1) + '%'; m4.textContent = '+' + d.toFixed(0) + '%';
-  b1.style.transform = `scaleX(${a / 100})`; b2.style.transform = `scaleX(${b / 100})`;
-  b3.style.transform = `scaleX(${c / 100})`; b4.style.transform = `scaleX(${d / 45})`;
+  const a = 96.5 + Math.sin(t * 0.6) * 1;
+  const b = 88.5 + Math.cos(t * 0.5) * 1;
+  const c = 99 + Math.sin(t * 0.4) * 0.3;
+  const d = 33 + Math.sin(t * 0.35) * 4;
+  m1.textContent = a.toFixed(0) + "%"; m2.textContent = b.toFixed(0) + "%";
+  m3.textContent = c.toFixed(0) + "%"; m4.textContent = "+" + d.toFixed(0) + "%";
+  b1.style.transform = "scaleX(" + (a / 100) + ")"; b2.style.transform = "scaleX(" + (b / 100) + ")";
+  b3.style.transform = "scaleX(" + (c / 100) + ")"; b4.style.transform = "scaleX(" + (d / 45) + ")";
 
   controls.update();
   renderer.render(scene, camera);
