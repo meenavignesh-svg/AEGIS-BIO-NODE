@@ -91,7 +91,7 @@
     <aside class="panel left">
       <div class="brand">AEGIS BioNode<strong>Modular Gyroid Perfusion Bioreactor</strong></div>
       <h1>Living tissue engine.</h1>
-      <p class="lead">Black-and-white technical prototype using the actual mathematical gyroid (triply periodic minimal surface) as the perfusion core.</p>
+      <p class="lead">Black-and-white technical prototype using the actual mathematical gyroid (triply periodic minimal surface) as the perfusion core, correctly sized inside the vessel.</p>
       <div>
         <div class="section-label">Architecture</div>
         <div class="chip-row">
@@ -141,7 +141,7 @@
     <span>SCROLL TO ZOOM</span>
     <span>1 SOLID · 2 WIRE · 3 X-RAY · 4 CORE</span>
   </div>
-  <div class="hud">TRUE GYROID · TPMS ISO-SURFACE</div>
+  <div class="hud">TRUE GYROID · CONTAINED IN VESSEL</div>
 
   <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.165.0/build/three.module.js"}}</script>
   <script type="module">
@@ -157,17 +157,17 @@
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 100);
-    camera.position.set(8.5, 4.8, 10.5);
+    camera.position.set(9.2, 5.0, 11.0);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.3;
+    controls.autoRotateSpeed = 0.28;
     controls.enablePan = false;
-    controls.minDistance = 5;
-    controls.maxDistance = 24;
-    controls.target.set(0, 0.2, 0);
+    controls.minDistance = 6;
+    controls.maxDistance = 26;
+    controls.target.set(0, 0.15, 0);
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     const key = new THREE.DirectionalLight(0xffffff, 0.9);
@@ -183,38 +183,40 @@
     const group = new THREE.Group();
     scene.add(group);
 
+    // ── Fixed dimensions ────────────────────────────────────────────────────
+    // Vessel (cylinder) is the outer container.
+    // Gyroid must fit strictly inside it with clear clearance.
+    const VESSEL_RADIUS = 3.2;          // outer cylinder radius
+    const VESSEL_LENGTH = 6.8;          // cylinder length (along X)
+    const GYROID_SCALE  = 0.92;         // scale of mathematical gyroid (kept smaller)
+    const GYROID_MAX_R  = 2.35;         // hard radial limit for gyroid points
+
     // ── Materials ──
     const matShell = new THREE.MeshStandardMaterial({
-      color: 0x222222, roughness: 0xffffff, emissiveIntensity: 0.02,
-      roughness: 0.55, metalness: 0.1, transparent: true, opacity: 0.88, side: THREE.DoubleSide
+      color: 0x222222, emissive: 0xffffff, emissiveIntensity: 0.02,
+      roughness: 0.55, metalness: 0.1, transparent: true, opacity: 0.82, side: THREE.DoubleSide
     });
     const matGyroid = new THREE.MeshStandardMaterial({
-      color: 0xe0e0e0, emissive: 0xffffff, emissiveIntensity: 0.04,
-      roughness: 0.4, metalness: 0.15, side: THREE.DoubleSide
+      color: 0xe4e4e4, emissive: 0xffffff, emissiveIntensity: 0.05,
+      roughness: 0.38, metalness: 0.12, side: THREE.DoubleSide
     });
     const matGyroidWire = new THREE.MeshBasicMaterial({
-      color: 0xffffff, wireframe: true, transparent: true, opacity: 0.7
+      color: 0xffffff, wireframe: true, transparent: true, opacity: 0.75
     });
     const matXray = new THREE.MeshBasicMaterial({
-      color: 0xffffff, transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthWrite: false
+      color: 0xffffff, transparent: true, opacity: 0.07, side: THREE.DoubleSide, depthWrite: false
     });
 
-    // ── True Gyroid Isosurface ───────────────────────────────────────────────
-    // Classic Schoen gyroid: sin(x)cos(y) + sin(y)cos(z) + sin(z)cos(x) = 0
+    // ── True Gyroid Isosurface (Schoen) ─────────────────────────────────────
     function gyroid(x, y, z) {
       return Math.sin(x) * Math.cos(y) + Math.sin(y) * Math.cos(z) + Math.sin(z) * Math.cos(x);
     }
 
-    // Build a sheet gyroid by sampling a regular grid and creating triangles
-    // where the function crosses zero (simple marching-cubes style for demo)
-    function buildGyroidMesh(resolution = 28, scale = 1.55, thickness = 0.18) {
-      const positions = [];
-      const indices = [];
+    function buildGyroidMesh(resolution = 24) {
+      const cell = (Math.PI * 2) / (resolution - 1);
       const half = (resolution - 1) / 2;
-      const cell = (Math.PI * 2) / (resolution - 1); // one full period roughly
-
-      // Sample scalar field
       const field = new Float32Array(resolution * resolution * resolution);
+
       for (let i = 0; i < resolution; i++) {
         for (let j = 0; j < resolution; j++) {
           for (let k = 0; k < resolution; k++) {
@@ -226,21 +228,33 @@
         }
       }
 
-      // Simple isosurface extraction: for each cell, if sign changes, place a quad/triangle
-      // We generate a thin sheet by taking points near zero and connecting neighbours
       const verts = [];
       const vertMap = new Map();
 
       function addVert(x, y, z) {
-        const key = `${x.toFixed(4)},${y.toFixed(4)},${z.toFixed(4)}`;
+        // Apply scale then enforce hard radial clamp so nothing escapes the vessel
+        let px = x * GYROID_SCALE;
+        let py = y * GYROID_SCALE;
+        let pz = z * GYROID_SCALE;
+
+        const r = Math.sqrt(py * py + pz * pz);
+        if (r > GYROID_MAX_R) {
+          const s = GYROID_MAX_R / r;
+          py *= s;
+          pz *= s;
+        }
+        // Also limit length along vessel axis
+        const maxX = (VESSEL_LENGTH * 0.5) - 0.35;
+        if (Math.abs(px) > maxX) px = Math.sign(px) * maxX;
+
+        const key = `${px.toFixed(4)},${py.toFixed(4)},${pz.toFixed(4)}`;
         if (vertMap.has(key)) return vertMap.get(key);
         const idx = verts.length / 3;
-        verts.push(x * scale, y * scale, z * scale);
+        verts.push(px, py, pz);
         vertMap.set(key, idx);
         return idx;
       }
 
-      // March over edges and create surface patches near the isosurface
       for (let i = 0; i < resolution - 1; i++) {
         for (let j = 0; j < resolution - 1; j++) {
           for (let k = 0; k < resolution - 1; k++) {
@@ -253,48 +267,39 @@
             const v011 = field[i * resolution * resolution + (j+1) * resolution + (k+1)];
             const v111 = field[(i+1) * resolution * resolution + (j+1) * resolution + (k+1)];
 
-            // If the cell straddles the isosurface, create a simple approximating face
             const vals = [v000, v100, v010, v001, v110, v101, v011, v111];
-            const hasPos = vals.some(v => v > 0);
-            const hasNeg = vals.some(v => v < 0);
-            if (!hasPos || !hasNeg) continue;
+            if (!vals.some(v => v > 0) || !vals.some(v => v < 0)) continue;
 
-            // Place a vertex at the approximate zero crossing (average of cell center projected)
-            const cx = (i + 0.5 - half) * cell;
-            const cy = (j + 0.5 - half) * cell;
-            const cz = (k + 0.5 - half) * cell;
+            let px = (i + 0.5 - half) * cell;
+            let py = (j + 0.5 - half) * cell;
+            let pz = (k + 0.5 - half) * cell;
 
-            // Refine position toward the surface with a few Newton-like steps
-            let px = cx, py = cy, pz = cz;
-            for (let s = 0; s < 3; s++) {
+            // Project toward isosurface
+            for (let s = 0; s < 4; s++) {
               const g = gyroid(px, py, pz);
-              // Approximate gradient
-              const eps = 0.05;
-              const gx = (gyroid(px + eps, py, pz) - gyroid(px - eps, py, pz)) / (2 * eps);
-              const gy = (gyroid(px, py + eps, pz) - gyroid(px, py - eps, pz)) / (2 * eps);
-              const gz = (gyroid(px, py, pz + eps) - gyroid(px, py, pz - eps)) / (2 * eps);
-              const len = Math.sqrt(gx*gx + gy*gy + gz*gz) + 1e-6;
-              px -= (g / len) * gx * 0.4;
-              py -= (g / len) * gy * 0.4;
-              pz -= (g / len) * gz * 0.4;
+              const eps = 0.04;
+              const gx = (gyroid(px+eps, py, pz) - gyroid(px-eps, py, pz)) / (2*eps);
+              const gy = (gyroid(px, py+eps, pz) - gyroid(px, py-eps, pz)) / (2*eps);
+              const gz = (gyroid(px, py, pz+eps) - gyroid(px, py, pz-eps)) / (2*eps);
+              const len = Math.sqrt(gx*gx + gy*gy + gz*gz) + 1e-8;
+              px -= (g / len) * gx * 0.35;
+              py -= (g / len) * gy * 0.35;
+              pz -= (g / len) * gz * 0.35;
             }
 
-            // Only keep points reasonably close to the surface
-            if (Math.abs(gyroid(px, py, pz)) > 0.35) continue;
-
+            if (Math.abs(gyroid(px, py, pz)) > 0.32) continue;
             addVert(px, py, pz);
           }
         }
       }
 
-      // Now connect nearby surface points into triangles (local Delaunay-ish)
+      // Connect nearby points into triangles
       const pts = [];
       for (let i = 0; i < verts.length; i += 3) {
         pts.push(new THREE.Vector3(verts[i], verts[i+1], verts[i+2]));
       }
 
-      // Build faces by connecting each point to its nearest neighbours
-      const maxDist = scale * 0.55;
+      const maxDist = 0.48;
       const idxList = [];
       for (let i = 0; i < pts.length; i++) {
         const neighbours = [];
@@ -304,15 +309,11 @@
           if (d < maxDist) neighbours.push({ j, d });
         }
         neighbours.sort((a, b) => a.d - b.d);
-        // Form triangles with the two closest neighbours that form a reasonable face
         for (let a = 0; a < Math.min(4, neighbours.length); a++) {
           for (let b = a + 1; b < Math.min(5, neighbours.length); b++) {
             const j = neighbours[a].j;
             const k = neighbours[b].j;
-            // Avoid duplicate faces
-            if (i < j && i < k) {
-              idxList.push(i, j, k);
-            }
+            if (i < j && i < k) idxList.push(i, j, k);
           }
         }
       }
@@ -324,31 +325,31 @@
       return geo;
     }
 
-    // Generate the gyroid core (slightly expensive but runs once)
-    console.log('Building true gyroid isosurface…');
-    const gyroidGeo = buildGyroidMesh(26, 1.48, 0.15);
+    // Build gyroid (once)
+    const gyroidGeo = buildGyroidMesh(24);
     const gyroidMesh = new THREE.Mesh(gyroidGeo, matGyroid);
     group.add(gyroidMesh);
 
-    // Outer cylindrical housing
-    const shellGeo = new THREE.CylinderGeometry(3.15, 3.15, 6.4, 64, 1, true);
+    // ── Vessel (outer cylinder) – deliberately larger than the gyroid ────────
+    const shellGeo = new THREE.CylinderGeometry(VESSEL_RADIUS, VESSEL_RADIUS, VESSEL_LENGTH, 64, 1, true);
     const shellMesh = new THREE.Mesh(shellGeo, matShell);
-    shellMesh.rotation.z = Math.PI / 2;
+    shellMesh.rotation.z = Math.PI / 2;   // align length along X
     group.add(shellMesh);
 
     // End caps
-    const capGeo = new THREE.CircleGeometry(3.15, 64);
-    const capMat = matShell.clone();
-    const cap1 = new THREE.Mesh(capGeo, capMat);
-    cap1.position.x = 3.2; cap1.rotation.y = Math.PI / 2;
+    const capGeo = new THREE.CircleGeometry(VESSEL_RADIUS, 64);
+    const cap1 = new THREE.Mesh(capGeo, matShell.clone());
+    cap1.position.x =  VESSEL_LENGTH * 0.5;
+    cap1.rotation.y =  Math.PI / 2;
     group.add(cap1);
-    const cap2 = new THREE.Mesh(capGeo, capMat);
-    cap2.position.x = -3.2; cap2.rotation.y = -Math.PI / 2;
+    const cap2 = new THREE.Mesh(capGeo, matShell.clone());
+    cap2.position.x = -VESSEL_LENGTH * 0.5;
+    cap2.rotation.y = -Math.PI / 2;
     group.add(cap2);
 
-    // Technical edge lines
-    function addEdges(mesh, opacity = 0.6) {
-      const edges = new THREE.EdgesGeometry(mesh.geometry, 20);
+    // Edge lines for technical look
+    function addEdges(mesh, opacity = 0.55) {
+      const edges = new THREE.EdgesGeometry(mesh.geometry, 22);
       const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({
         color: 0xffffff, transparent: true, opacity
       }));
@@ -359,36 +360,38 @@
     }
     const shellEdges = addEdges(shellMesh, 0.5);
 
-    // Sensor docking rings
-    const ringGeo = new THREE.TorusGeometry(0.58, 0.035, 10, 48);
-    const dockMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.4 });
+    // Sensor docking rings (on the vessel surface)
+    const ringGeo = new THREE.TorusGeometry(0.52, 0.032, 10, 48);
+    const dockMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.45 });
     const dock1 = new THREE.Mesh(ringGeo, dockMat);
-    dock1.position.set(0, 2.65, 0);
+    dock1.position.set(0, VESSEL_RADIUS - 0.15, 0);
     dock1.rotation.x = Math.PI / 2;
     group.add(dock1);
     const dock2 = new THREE.Mesh(ringGeo, dockMat);
-    dock2.position.set(0, -2.65, 0);
+    dock2.position.set(0, -(VESSEL_RADIUS - 0.15), 0);
     dock2.rotation.x = Math.PI / 2;
     group.add(dock2);
 
-    // Subtle flow particles inside the volume
-    const pCount = 220;
+    // Subtle internal particles (kept inside vessel)
+    const pCount = 160;
     const pGeo = new THREE.BufferGeometry();
     const pPos = new Float32Array(pCount * 3);
     for (let i = 0; i < pCount; i++) {
-      pPos[i*3]   = (Math.random() - 0.5) * 5.8;
-      pPos[i*3+1] = (Math.random() - 0.5) * 4.2;
-      pPos[i*3+2] = (Math.random() - 0.5) * 4.2;
+      const angle = Math.random() * Math.PI * 2;
+      const r = Math.random() * (GYROID_MAX_R * 0.9);
+      pPos[i*3]   = (Math.random() - 0.5) * (VESSEL_LENGTH - 1.0);
+      pPos[i*3+1] = Math.cos(angle) * r;
+      pPos[i*3+2] = Math.sin(angle) * r;
     }
     pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
     const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
-      color: 0xffffff, size: 0.022, transparent: true, opacity: 0.28, depthWrite: false
+      color: 0xffffff, size: 0.02, transparent: true, opacity: 0.25, depthWrite: false
     }));
     group.add(particles);
 
     // Ground grid
-    const grid = new THREE.GridHelper(20, 40, 0x2a2a2a, 0x161616);
-    grid.position.y = -4.0;
+    const grid = new THREE.GridHelper(22, 44, 0x2a2a2a, 0x151515);
+    grid.position.y = -4.4;
     scene.add(grid);
 
     // ── Mode switching ──
@@ -400,9 +403,9 @@
       if (mode === 'solid') {
         gyroidMesh.material = matGyroid;
         gyroidMesh.visible = true;
-        shellMesh.visible = true; shellMesh.material = matShell; shellMesh.material.opacity = 0.88;
+        shellMesh.visible = true; shellMesh.material = matShell; shellMesh.material.opacity = 0.82;
         cap1.visible = true; cap2.visible = true;
-        shellEdges.visible = true;
+        shellEdges.visible = true; shellEdges.material.opacity = 0.5;
       } else if (mode === 'wire') {
         gyroidMesh.material = matGyroidWire;
         gyroidMesh.visible = true;
@@ -439,15 +442,15 @@
       camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(innerWidth, innerHeight);
-      group.scale.setScalar(innerWidth < 700 ? 0.7 : 1);
+      group.scale.setScalar(innerWidth < 700 ? 0.68 : 1);
     }
     fit();
     addEventListener('resize', fit);
 
     function animate(ms) {
       const t = ms * 0.001;
-      group.rotation.y = t * 0.07;
-      particles.rotation.y = -t * 0.025;
+      group.rotation.y = t * 0.065;
+      particles.rotation.y = -t * 0.02;
 
       const a = 95.7 + Math.sin(t * 0.65) * 1.0;
       const b = 88.4 + Math.cos(t * 0.48) * 0.9;
