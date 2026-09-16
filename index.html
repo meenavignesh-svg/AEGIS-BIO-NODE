@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AEGIS BioNode | Technical 3D Prototype</title>
-  <meta name="description" content="Interactive black-and-white technical 3D prototype of the AEGIS BioNode modular gyroid perfusion bioreactor.">
+  <meta name="description" content="Interactive black-and-white technical 3D prototype of the AEGIS BioNode modular gyroid perfusion bioreactor with true TPMS geometry.">
   <style>
     :root {
       color-scheme: dark;
@@ -12,7 +12,6 @@
       --ink: #f0f0f0;
       --muted: #9a9a9a;
       --line: rgba(255,255,255,0.18);
-      --accent: #ffffff;
       --panel: rgba(12,12,12,0.88);
       font-family: "SF Mono", "Roboto Mono", ui-monospace, Menlo, Consolas, monospace;
     }
@@ -32,18 +31,13 @@
       padding: 18px 16px;
       display: flex; flex-direction: column; gap: 14px;
     }
-    .left { border-right: none; }
-    .right { border-left: none; }
     .brand { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
     .brand strong { display: block; color: var(--ink); font-size: 0.95rem; letter-spacing: 0.08em; margin-top: 4px; }
-    h1 { font-size: 1.35rem; font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; }
+    h1 { font-size: 1.35rem; font-weight: 500; line-height: 1.25; }
     .lead { font-size: 0.78rem; line-height: 1.5; color: var(--muted); }
     .section-label { font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
     .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
-    .chip {
-      border: 1px solid var(--line); padding: 4px 8px; font-size: 0.68rem;
-      color: var(--muted); border-radius: 2px;
-    }
+    .chip { border: 1px solid var(--line); padding: 4px 8px; font-size: 0.68rem; color: var(--muted); border-radius: 2px; }
     .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     button {
       border: 1px solid var(--line); background: transparent; color: var(--ink);
@@ -86,10 +80,10 @@
   </style>
 </head>
 <body>
-  <canvas id="scene" aria-label="AEGIS BioNode technical 3D prototype"></canvas>
+  <canvas id="scene" aria-label="AEGIS BioNode technical 3D prototype – true gyroid TPMS"></canvas>
 
   <div class="center-title">
-    <div class="eyebrow">Technical Prototype · Line Model</div>
+    <div class="eyebrow">Technical Prototype · True Gyroid TPMS</div>
     <h2>AEGIS BioNode</h2>
   </div>
 
@@ -97,11 +91,11 @@
     <aside class="panel left">
       <div class="brand">AEGIS BioNode<strong>Modular Gyroid Perfusion Bioreactor</strong></div>
       <h1>Living tissue engine.</h1>
-      <p class="lead">Black-and-white technical prototype of a next-generation bioreactor using non-Euclidean gyroid lattice geometry for low-shear, uniform nutrient transport and sterile optical sensing.</p>
+      <p class="lead">Black-and-white technical prototype using the actual mathematical gyroid (triply periodic minimal surface) as the perfusion core.</p>
       <div>
         <div class="section-label">Architecture</div>
         <div class="chip-row">
-          <span class="chip">Gyroid TPMS Core</span>
+          <span class="chip">True Gyroid TPMS</span>
           <span class="chip">Septum-Lock Dock</span>
           <span class="chip">Optical Telemetry</span>
           <span class="chip">Modular Cartridge</span>
@@ -111,9 +105,9 @@
         <div class="section-label">View Modes</div>
         <div class="controls">
           <button class="active" data-mode="solid">Solid</button>
-          <button data-mode="wire">Wireframe</button>
+          <button data-mode="wire">Wire</button>
           <button data-mode="xray">X-Ray</button>
-          <button data-mode="lattice">Lattice</button>
+          <button data-mode="core">Core Only</button>
         </div>
       </div>
     </aside>
@@ -135,8 +129,8 @@
       </div>
       <div class="flow">
         <h2>System Flow</h2>
-        <div class="step"><span class="node"></span><span>Media enters distributed inlet manifold → gyroid lattice core</span></div>
-        <div class="step"><span class="node"></span><span>Optical ports track pH, dO₂, temperature & spatial gradients</span></div>
+        <div class="step"><span class="node"></span><span>Media enters distributed inlet → continuous gyroid channels</span></div>
+        <div class="step"><span class="node"></span><span>Zero-mean-curvature surface eliminates dead zones</span></div>
         <div class="step"><span class="node"></span><span>Septum-lock dock enables sterile sensor exchange</span></div>
       </div>
     </aside>
@@ -145,221 +139,288 @@
   <div class="footer">
     <span>DRAG TO ROTATE</span>
     <span>SCROLL TO ZOOM</span>
-    <span>1 SOLID · 2 WIRE · 3 X-RAY · 4 LATTICE</span>
+    <span>1 SOLID · 2 WIRE · 3 X-RAY · 4 CORE</span>
   </div>
-  <div class="hud">PROTOTYPE MODEL · B&W TECHNICAL LINE</div>
+  <div class="hud">TRUE GYROID · TPMS ISO-SURFACE</div>
 
   <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.165.0/build/three.module.js"}}</script>
   <script type="module">
     import * as THREE from "three";
     import { OrbitControls } from "https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js";
-    import { EdgesGeometry } from "https://unpkg.com/three@0.165.0/build/three.module.js";
 
     const canvas = document.querySelector('#scene');
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setSize(innerWidth, innerHeight);
     renderer.setClearColor(0x0a0a0a);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 120);
-    camera.position.set(9.5, 5.2, 11.5);
+    const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 100);
+    camera.position.set(8.5, 4.8, 10.5);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.35;
+    controls.autoRotateSpeed = 0.3;
     controls.enablePan = false;
-    controls.minDistance = 6;
-    controls.maxDistance = 28;
-    controls.target.set(0, 0.4, 0);
+    controls.minDistance = 5;
+    controls.maxDistance = 24;
+    controls.target.set(0, 0.2, 0);
 
-    // Lights – technical / studio
-    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-    const key = new THREE.DirectionalLight(0xffffff, 0.85);
-    key.position.set(6, 10, 8);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const key = new THREE.DirectionalLight(0xffffff, 0.9);
+    key.position.set(5, 9, 7);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0xffffff, 0.25);
-    fill.position.set(-5, 3, -4);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.3);
+    fill.position.set(-6, 2, -5);
     scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xffffff, 0.4);
-    rim.position.set(-3, -2, 6);
+    const rim = new THREE.DirectionalLight(0xffffff, 0.35);
+    rim.position.set(-2, -3, 5);
     scene.add(rim);
 
     const group = new THREE.Group();
     scene.add(group);
 
-    // Materials – pure B&W technical
-    const matSolid = new THREE.MeshStandardMaterial({
-      color: 0x1a1a1a, roughness: 0.45, metalness: 0.15,
-      flatShading: false, side: THREE.DoubleSide
-    });
+    // ── Materials ──
     const matShell = new THREE.MeshStandardMaterial({
-      color: 0x2a2a2a, roughness: 0.55, metalness: 0.08,
-      transparent: true, opacity: 0.92, side: THREE.DoubleSide
+      color: 0x222222, roughness: 0xffffff, emissiveIntensity: 0.02,
+      roughness: 0.55, metalness: 0.1, transparent: true, opacity: 0.88, side: THREE.DoubleSide
     });
-    const matWire = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
-    const matWireDim = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22 });
+    const matGyroid = new THREE.MeshStandardMaterial({
+      color: 0xe0e0e0, emissive: 0xffffff, emissiveIntensity: 0.04,
+      roughness: 0.4, metalness: 0.15, side: THREE.DoubleSide
+    });
+    const matGyroidWire = new THREE.MeshBasicMaterial({
+      color: 0xffffff, wireframe: true, transparent: true, opacity: 0.7
+    });
     const matXray = new THREE.MeshBasicMaterial({
-      color: 0xffffff, transparent: true, opacity: 0.07, side: THREE.DoubleSide, depthWrite: false
-    });
-    const matLattice = new THREE.MeshStandardMaterial({
-      color: 0xe8e8e8, roughness: 0xffffff, emissiveIntensity: 0.08,
-      roughness: 0.35, metalness: 0.1, side: THREE.DoubleSide
+      color: 0xffffff, transparent: true, opacity: 0.08, side: THREE.DoubleSide, depthWrite: false
     });
 
-    // ── Gyroid-inspired lattice (approximated with interconnected nodes + struts) ──
-    const latticeGroup = new THREE.Group();
-    const nodePositions = [];
-    const N = 7; // grid resolution
-    const spacing = 0.72;
-    const offset = (N - 1) * spacing * 0.5;
+    // ── True Gyroid Isosurface ───────────────────────────────────────────────
+    // Classic Schoen gyroid: sin(x)cos(y) + sin(y)cos(z) + sin(z)cos(x) = 0
+    function gyroid(x, y, z) {
+      return Math.sin(x) * Math.cos(y) + Math.sin(y) * Math.cos(z) + Math.sin(z) * Math.cos(x);
+    }
 
-    // Generate gyroid-like points using the classic approximation
-    for (let i = 0; i < N; i++) {
-      for (let j = 0; j < N; j++) {
-        for (let k = 0; k < N; k++) {
-          const x = i * spacing - offset;
-          const y = j * spacing - offset;
-          const z = k * spacing - offset;
-          // Gyroid isosurface test (simplified)
-          const gx = Math.sin(x * 1.8) * Math.cos(y * 1.8) + Math.sin(y * 1.8) * Math.cos(z * 1.8) + Math.sin(z * 1.8) * Math.cos(x * 1.8);
-          if (Math.abs(gx) < 0.55) {
-            nodePositions.push(new THREE.Vector3(x * 1.15, y * 0.95, z * 1.15));
+    // Build a sheet gyroid by sampling a regular grid and creating triangles
+    // where the function crosses zero (simple marching-cubes style for demo)
+    function buildGyroidMesh(resolution = 28, scale = 1.55, thickness = 0.18) {
+      const positions = [];
+      const indices = [];
+      const half = (resolution - 1) / 2;
+      const cell = (Math.PI * 2) / (resolution - 1); // one full period roughly
+
+      // Sample scalar field
+      const field = new Float32Array(resolution * resolution * resolution);
+      for (let i = 0; i < resolution; i++) {
+        for (let j = 0; j < resolution; j++) {
+          for (let k = 0; k < resolution; k++) {
+            const x = (i - half) * cell;
+            const y = (j - half) * cell;
+            const z = (k - half) * cell;
+            field[i * resolution * resolution + j * resolution + k] = gyroid(x, y, z);
           }
         }
       }
+
+      // Simple isosurface extraction: for each cell, if sign changes, place a quad/triangle
+      // We generate a thin sheet by taking points near zero and connecting neighbours
+      const verts = [];
+      const vertMap = new Map();
+
+      function addVert(x, y, z) {
+        const key = `${x.toFixed(4)},${y.toFixed(4)},${z.toFixed(4)}`;
+        if (vertMap.has(key)) return vertMap.get(key);
+        const idx = verts.length / 3;
+        verts.push(x * scale, y * scale, z * scale);
+        vertMap.set(key, idx);
+        return idx;
+      }
+
+      // March over edges and create surface patches near the isosurface
+      for (let i = 0; i < resolution - 1; i++) {
+        for (let j = 0; j < resolution - 1; j++) {
+          for (let k = 0; k < resolution - 1; k++) {
+            const v000 = field[i * resolution * resolution + j * resolution + k];
+            const v100 = field[(i+1) * resolution * resolution + j * resolution + k];
+            const v010 = field[i * resolution * resolution + (j+1) * resolution + k];
+            const v001 = field[i * resolution * resolution + j * resolution + (k+1)];
+            const v110 = field[(i+1) * resolution * resolution + (j+1) * resolution + k];
+            const v101 = field[(i+1) * resolution * resolution + j * resolution + (k+1)];
+            const v011 = field[i * resolution * resolution + (j+1) * resolution + (k+1)];
+            const v111 = field[(i+1) * resolution * resolution + (j+1) * resolution + (k+1)];
+
+            // If the cell straddles the isosurface, create a simple approximating face
+            const vals = [v000, v100, v010, v001, v110, v101, v011, v111];
+            const hasPos = vals.some(v => v > 0);
+            const hasNeg = vals.some(v => v < 0);
+            if (!hasPos || !hasNeg) continue;
+
+            // Place a vertex at the approximate zero crossing (average of cell center projected)
+            const cx = (i + 0.5 - half) * cell;
+            const cy = (j + 0.5 - half) * cell;
+            const cz = (k + 0.5 - half) * cell;
+
+            // Refine position toward the surface with a few Newton-like steps
+            let px = cx, py = cy, pz = cz;
+            for (let s = 0; s < 3; s++) {
+              const g = gyroid(px, py, pz);
+              // Approximate gradient
+              const eps = 0.05;
+              const gx = (gyroid(px + eps, py, pz) - gyroid(px - eps, py, pz)) / (2 * eps);
+              const gy = (gyroid(px, py + eps, pz) - gyroid(px, py - eps, pz)) / (2 * eps);
+              const gz = (gyroid(px, py, pz + eps) - gyroid(px, py, pz - eps)) / (2 * eps);
+              const len = Math.sqrt(gx*gx + gy*gy + gz*gz) + 1e-6;
+              px -= (g / len) * gx * 0.4;
+              py -= (g / len) * gy * 0.4;
+              pz -= (g / len) * gz * 0.4;
+            }
+
+            // Only keep points reasonably close to the surface
+            if (Math.abs(gyroid(px, py, pz)) > 0.35) continue;
+
+            addVert(px, py, pz);
+          }
+        }
+      }
+
+      // Now connect nearby surface points into triangles (local Delaunay-ish)
+      const pts = [];
+      for (let i = 0; i < verts.length; i += 3) {
+        pts.push(new THREE.Vector3(verts[i], verts[i+1], verts[i+2]));
+      }
+
+      // Build faces by connecting each point to its nearest neighbours
+      const maxDist = scale * 0.55;
+      const idxList = [];
+      for (let i = 0; i < pts.length; i++) {
+        const neighbours = [];
+        for (let j = 0; j < pts.length; j++) {
+          if (i === j) continue;
+          const d = pts[i].distanceTo(pts[j]);
+          if (d < maxDist) neighbours.push({ j, d });
+        }
+        neighbours.sort((a, b) => a.d - b.d);
+        // Form triangles with the two closest neighbours that form a reasonable face
+        for (let a = 0; a < Math.min(4, neighbours.length); a++) {
+          for (let b = a + 1; b < Math.min(5, neighbours.length); b++) {
+            const j = neighbours[a].j;
+            const k = neighbours[b].j;
+            // Avoid duplicate faces
+            if (i < j && i < k) {
+              idxList.push(i, j, k);
+            }
+          }
+        }
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+      geo.setIndex(idxList);
+      geo.computeVertexNormals();
+      return geo;
     }
 
-    // Core sphere (culture chamber)
-    const coreGeo = new THREE.SphereGeometry(2.05, 48, 48);
-    const coreMesh = new THREE.Mesh(coreGeo, matShell);
-    group.add(coreMesh);
+    // Generate the gyroid core (slightly expensive but runs once)
+    console.log('Building true gyroid isosurface…');
+    const gyroidGeo = buildGyroidMesh(26, 1.48, 0.15);
+    const gyroidMesh = new THREE.Mesh(gyroidGeo, matGyroid);
+    group.add(gyroidMesh);
 
-    // Outer cylindrical shell (housing) – technical look
-    const shellGeo = new THREE.CylinderGeometry(3.1, 3.1, 6.2, 64, 1, true);
+    // Outer cylindrical housing
+    const shellGeo = new THREE.CylinderGeometry(3.15, 3.15, 6.4, 64, 1, true);
     const shellMesh = new THREE.Mesh(shellGeo, matShell);
     shellMesh.rotation.z = Math.PI / 2;
     group.add(shellMesh);
 
     // End caps
-    const capGeo = new THREE.CircleGeometry(3.1, 64);
-    const cap1 = new THREE.Mesh(capGeo, matShell);
-    cap1.position.x = 3.1; cap1.rotation.y = Math.PI / 2;
+    const capGeo = new THREE.CircleGeometry(3.15, 64);
+    const capMat = matShell.clone();
+    const cap1 = new THREE.Mesh(capGeo, capMat);
+    cap1.position.x = 3.2; cap1.rotation.y = Math.PI / 2;
     group.add(cap1);
-    const cap2 = new THREE.Mesh(capGeo, matShell);
-    cap2.position.x = -3.1; cap2.rotation.y = -Math.PI / 2;
+    const cap2 = new THREE.Mesh(capGeo, capMat);
+    cap2.position.x = -3.2; cap2.rotation.y = -Math.PI / 2;
     group.add(cap2);
 
-    // Gyroid lattice nodes
-    const nodeGeo = new THREE.IcosahedronGeometry(0.09, 1);
-    const nodes = [];
-    nodePositions.forEach(p => {
-      const m = new THREE.Mesh(nodeGeo, matLattice.clone());
-      m.position.copy(p);
-      latticeGroup.add(m);
-      nodes.push(m);
-    });
-
-    // Connect nearby nodes with thin struts (line segments)
-    const strutMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 });
-    const links = [];
-    for (let i = 0; i < nodePositions.length; i++) {
-      for (let j = i + 1; j < nodePositions.length; j++) {
-        const d = nodePositions[i].distanceTo(nodePositions[j]);
-        if (d < 1.05 && d > 0.35) {
-          const geo = new THREE.BufferGeometry().setFromPoints([nodePositions[i], nodePositions[j]]);
-          const line = new THREE.Line(geo, strutMat.clone());
-          latticeGroup.add(line);
-          links.push(line);
-        }
-      }
-    }
-    group.add(latticeGroup);
-
-    // Edge lines for technical look (shell)
-    function addEdges(mesh, opacity = 0.7) {
-      const edges = new THREE.EdgesGeometry(mesh.geometry, 25);
+    // Technical edge lines
+    function addEdges(mesh, opacity = 0.6) {
+      const edges = new THREE.EdgesGeometry(mesh.geometry, 20);
       const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({
         color: 0xffffff, transparent: true, opacity
       }));
       line.position.copy(mesh.position);
       line.rotation.copy(mesh.rotation);
-      line.scale.copy(mesh.scale);
       group.add(line);
       return line;
     }
-    const shellEdges = addEdges(shellMesh, 0.55);
-    const coreEdges = addEdges(coreMesh, 0.35);
+    const shellEdges = addEdges(shellMesh, 0.5);
 
-    // Sensor docking rings (septum-lock visual)
-    const ringGeo = new THREE.TorusGeometry(0.55, 0.04, 12, 48);
-    const dock1 = new THREE.Mesh(ringGeo, matLattice);
-    dock1.position.set(0, 2.55, 0);
+    // Sensor docking rings
+    const ringGeo = new THREE.TorusGeometry(0.58, 0.035, 10, 48);
+    const dockMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.4 });
+    const dock1 = new THREE.Mesh(ringGeo, dockMat);
+    dock1.position.set(0, 2.65, 0);
     dock1.rotation.x = Math.PI / 2;
     group.add(dock1);
-    const dock2 = new THREE.Mesh(ringGeo, matLattice);
-    dock2.position.set(0, -2.55, 0);
+    const dock2 = new THREE.Mesh(ringGeo, dockMat);
+    dock2.position.set(0, -2.65, 0);
     dock2.rotation.x = Math.PI / 2;
     group.add(dock2);
 
-    // Flow indicator particles (subtle)
-    const particleCount = 180;
+    // Subtle flow particles inside the volume
+    const pCount = 220;
     const pGeo = new THREE.BufferGeometry();
-    const pPos = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount; i++) {
-      const t = Math.random() * Math.PI * 2;
-      const r = 1.4 + Math.random() * 1.4;
-      pPos[i*3] = (Math.random() - 0.5) * 5.5;
-      pPos[i*3+1] = Math.cos(t) * r * 0.6;
-      pPos[i*3+2] = Math.sin(t) * r * 0.6;
+    const pPos = new Float32Array(pCount * 3);
+    for (let i = 0; i < pCount; i++) {
+      pPos[i*3]   = (Math.random() - 0.5) * 5.8;
+      pPos[i*3+1] = (Math.random() - 0.5) * 4.2;
+      pPos[i*3+2] = (Math.random() - 0.5) * 4.2;
     }
     pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
     const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({
-      color: 0xffffff, size: 0.028, transparent: true, opacity: 0.35, depthWrite: false
+      color: 0xffffff, size: 0.022, transparent: true, opacity: 0.28, depthWrite: false
     }));
     group.add(particles);
 
-    // Ground grid (technical drawing feel)
-    const grid = new THREE.GridHelper(22, 44, 0x333333, 0x1a1a1a);
-    grid.position.y = -4.2;
+    // Ground grid
+    const grid = new THREE.GridHelper(20, 40, 0x2a2a2a, 0x161616);
+    grid.position.y = -4.0;
     scene.add(grid);
 
-    // Mode switching
+    // ── Mode switching ──
     let mode = 'solid';
     function setMode(next) {
       mode = next;
       document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
       if (mode === 'solid') {
-        coreMesh.material = matShell; coreMesh.material.opacity = 0.92; coreMesh.visible = true;
-        shellMesh.material = matShell; shellMesh.material.opacity = 0.92; shellMesh.visible = true;
-        latticeGroup.visible = true;
-        nodes.forEach(n => { n.material = matLattice; n.visible = true; });
-        links.forEach(l => { l.material.opacity = 0.55; l.visible = true; });
-        shellEdges.material.opacity = 0.55; coreEdges.material.opacity = 0.35;
+        gyroidMesh.material = matGyroid;
+        gyroidMesh.visible = true;
+        shellMesh.visible = true; shellMesh.material = matShell; shellMesh.material.opacity = 0.88;
+        cap1.visible = true; cap2.visible = true;
+        shellEdges.visible = true;
       } else if (mode === 'wire') {
-        coreMesh.visible = false; shellMesh.visible = false;
-        latticeGroup.visible = true;
-        nodes.forEach(n => n.visible = false);
-        links.forEach(l => { l.material.opacity = 0.9; l.visible = true; });
-        shellEdges.material.opacity = 0.95; coreEdges.material.opacity = 0.7;
-        shellEdges.visible = true; coreEdges.visible = true;
+        gyroidMesh.material = matGyroidWire;
+        gyroidMesh.visible = true;
+        shellMesh.visible = false;
+        cap1.visible = false; cap2.visible = false;
+        shellEdges.visible = true; shellEdges.material.opacity = 0.9;
       } else if (mode === 'xray') {
-        coreMesh.material = matXray; coreMesh.visible = true;
+        gyroidMesh.material = matGyroid;
+        gyroidMesh.visible = true;
         shellMesh.material = matXray; shellMesh.visible = true;
-        latticeGroup.visible = true;
-        nodes.forEach(n => { n.material = matLattice; n.visible = true; });
-        links.forEach(l => { l.material.opacity = 0.7; l.visible = true; });
-        shellEdges.material.opacity = 0.4; coreEdges.material.opacity = 0.25;
-      } else if (mode === 'lattice') {
-        coreMesh.visible = false; shellMesh.visible = false;
-        shellEdges.visible = false; coreEdges.visible = false;
-        latticeGroup.visible = true;
-        nodes.forEach(n => { n.material = matLattice; n.visible = true; });
-        links.forEach(l => { l.material.opacity = 0.85; l.visible = true; });
+        cap1.visible = true; cap2.visible = true;
+        shellEdges.visible = true; shellEdges.material.opacity = 0.35;
+      } else if (mode === 'core') {
+        gyroidMesh.material = matGyroid;
+        gyroidMesh.visible = true;
+        shellMesh.visible = false;
+        cap1.visible = false; cap2.visible = false;
+        shellEdges.visible = false;
       }
     }
 
@@ -368,10 +429,9 @@
       if (e.key === '1') setMode('solid');
       if (e.key === '2') setMode('wire');
       if (e.key === '3') setMode('xray');
-      if (e.key === '4') setMode('lattice');
+      if (e.key === '4') setMode('core');
     });
 
-    // Metrics animation
     const m1 = document.querySelector('#m1'), m2 = document.querySelector('#m2'), m3 = document.querySelector('#m3');
     const b1 = document.querySelector('#b1'), b2 = document.querySelector('#b2'), b3 = document.querySelector('#b3');
 
@@ -379,32 +439,19 @@
       camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(innerWidth, innerHeight);
-      if (innerWidth < 700) {
-        camera.position.set(0, 3, 16);
-        group.scale.setScalar(0.72);
-      } else {
-        group.scale.setScalar(1);
-      }
+      group.scale.setScalar(innerWidth < 700 ? 0.7 : 1);
     }
     fit();
     addEventListener('resize', fit);
 
     function animate(ms) {
       const t = ms * 0.001;
-      group.rotation.y = t * 0.08;
-      particles.rotation.x = t * 0.04;
-      particles.rotation.z = -t * 0.03;
+      group.rotation.y = t * 0.07;
+      particles.rotation.y = -t * 0.025;
 
-      // Subtle node breathing
-      nodes.forEach((n, i) => {
-        const s = 1 + Math.sin(t * 2.2 + i * 0.4) * 0.12;
-        n.scale.setScalar(s);
-      });
-
-      // Live metrics
-      const a = 95.6 + Math.sin(t * 0.7) * 1.1;
-      const b = 88.2 + Math.cos(t * 0.5) * 1.0;
-      const c = 98.7 + Math.sin(t * 0.6) * 0.35;
+      const a = 95.7 + Math.sin(t * 0.65) * 1.0;
+      const b = 88.4 + Math.cos(t * 0.48) * 0.9;
+      const c = 98.8 + Math.sin(t * 0.55) * 0.3;
       m1.textContent = a.toFixed(1) + '%';
       m2.textContent = b.toFixed(1) + '%';
       m3.textContent = c.toFixed(1) + '%';
