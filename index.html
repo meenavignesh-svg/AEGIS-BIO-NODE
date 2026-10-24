@@ -14,7 +14,7 @@
 <script type="module">
 import * as T from "three";import{OrbitControls}from"three/addons/controls/OrbitControls.js";
 const $=id=>document.getElementById(id),canvas=$("view"),stage=$("stage");let renderer,scene,camera,controls,root,parts={},mode="solid",exploded=false,sectionActive=false;const L=7.2,R=1.65;let autoRotate=true;const sectionPlane=new T.Plane(new T.Vector3(1,0,0),0);
-const M={steel:new T.MeshStandardMaterial({color:0xd8e3e9,metalness:.72,roughness:.25}),dark:new T.MeshStandardMaterial({color:0x46535b,metalness:.72,roughness:.36}),glass:new T.MeshPhysicalMaterial({color:0xb8c7ce,roughness:.18,metalness:.08,transparent:true,opacity:.24,side:T.DoubleSide,depthWrite:false}),core:new T.MeshStandardMaterial({color:0xb2a58d,emissive:0x000000,emissiveIntensity:0,metalness:.35,roughness:.48,side:T.DoubleSide}),seal:new T.MeshStandardMaterial({color:0x252c31,roughness:.8}),accent:new T.MeshStandardMaterial({color:0x9aa8ad,emissive:0x000000,emissiveIntensity:0}),flow:new T.PointsMaterial({color:0x8de5d0,size:.05,transparent:true,opacity:.8,depthWrite:false})};
+const M={steel:new T.MeshStandardMaterial({color:0xc8d0d5,metalness:.58,roughness:.32}),dark:new T.MeshStandardMaterial({color:0x465159,metalness:.55,roughness:.42}),glass:new T.MeshPhysicalMaterial({color:0xa9c4cf,roughness:.24,metalness:0,transparent:true,opacity:.28,side:T.DoubleSide,depthWrite:true,depthTest:true}),core:new T.MeshStandardMaterial({color:0x6f9695,emissive:0x000000,emissiveIntensity:0,metalness:.18,roughness:.42,side:T.DoubleSide}),seal:new T.MeshStandardMaterial({color:0x252c31,roughness:.8}),accent:new T.MeshStandardMaterial({color:0x9aa8ad,emissive:0x000000,emissiveIntensity:0}),flow:new T.PointsMaterial({color:0x8de5d0,size:.035,transparent:true,opacity:.45,depthWrite:false})};
 function add(n,o){o.traverse(x=>x.userData.part=n);(parts[n]||(parts[n]=new T.Group())).add(o)}
 function box(n,geo,mat,p,r){const o=new T.Mesh(geo,mat);o.position.set(...p);if(r)o.rotation.set(...r);add(n,o);return o}
 function cyl(n,rad1,rad2,h,mat,p,r){return box(n,new T.CylinderGeometry(rad1,rad2,h,32),mat,p,r)}
@@ -25,14 +25,13 @@ function assembly(){root=new T.Group();scene.add(root);parts={};
  box("chamber",outer,M.glass,[0,0,0],[0,0,Math.PI/2]);
  box("chamber",inner,M.glass,[0,0,0],[0,0,Math.PI/2]);
  for(const x of [-L/2,L/2]){const rim=new T.Mesh(new T.RingGeometry(R-wall,R,96),M.glass);rim.rotation.y=Math.PI/2;rim.position.x=x;add("chamber",rim);}
- for(const s of [-1,1]){const x=s*(L/2);torus("housing",R,.09,M.steel,[x-s*.05,0,0],[0,Math.PI/2,0]);cyl("housing",R+.12,R+.12,.18,M.steel,[x+s*.12,0,0],[0,0,Math.PI/2]);torus("seals",R+.14,.05,M.dark,[x+s*.23,0,0],[0,Math.PI/2,0]);cyl("ports",.32,.32,.4,M.dark,[x+s*.42,0,0],[0,0,Math.PI/2]);cyl("ports",.22,.22,.55,M.steel,[x+s*.83,0,0],[0,0,Math.PI/2]);torus("ports",.25,.035,M.accent,[x+s*.65,0,0],[0,Math.PI/2,0]);for(let j=0;j<8;j++){const a=j*Math.PI/4;cyl("seals",.045,.045,.12,M.dark,[x+s*.12,Math.cos(a)*(R+.1),Math.sin(a)*(R+.1)]);}}
- for(let i=0;i<4;i++){const x=-2.35+i*1.57;cyl("sensors",.27,.3,.22,M.dark,[x,1.58,0]);cyl("sensors",.18,.18,.22,M.steel,[x,1.79,0]);cyl("sensors",.105,.105,.025,M.accent,[x,1.91,0]);torus("seals",.21,.027,M.seal,[x,1.68,0]);}
+ for(const s of [-1,1]){const x=s*(L/2);torus("housing",R,.09,M.steel,[x-s*.05,0,0],[0,Math.PI/2,0]);cyl("housing",R+.12,R+.12,.18,M.steel,[x+s*.12,0,0],[0,0,Math.PI/2]);torus("seals",R+.14,.05,M.dark,[x+s*.23,0,0],[0,Math.PI/2,0]);cyl("ports",.32,.32,.4,M.dark,[x+s*.42,0,0],[0,0,Math.PI/2]);cyl("ports",.22,.22,.55,M.steel,[x+s*.83,0,0],[0,0,Math.PI/2]);torus("ports",.25,.035,M.accent,[x+s*.65,0,0],[0,Math.PI/2,0]);for(let j=0;j<8;j++){const a=j*Math.PI/4;cyl("seals",.045,.045,.12,M.dark,[x+s*.12,Math.cos(a)*(R+.1),Math.sin(a)*(R+.1)],[0,0,Math.PI/2]);}}
+ for(const x of [-1.65,0,1.65]){cyl("sensors",.23,.26,.20,M.dark,[x,1.58,0]);cyl("sensors",.15,.15,.20,M.steel,[x,1.77,0]);cyl("sensors",.085,.085,.025,M.accent,[x,1.88,0]);torus("seals",.18,.022,M.seal,[x,1.67,0]);}
  for(const x of [-2.35,2.35]){box("housing",new T.BoxGeometry(.85,.16,1.5),M.dark,[x,-1.85,0]);box("housing",new T.BoxGeometry(.5,.5,.6),M.steel,[x,-1.55,0]);}
  buildCore();const ps=new Float32Array(80*3);for(let i=0;i<80;i++){ps[3*i]=(i/79-.5)*L;ps[3*i+1]=Math.sin(i*2.17)*.7;ps[3*i+2]=Math.cos(i*1.71)*.7}const g=new T.BufferGeometry();g.setAttribute("position",new T.BufferAttribute(ps,3));add("flow",new T.Points(g,M.flow));Object.values(parts).forEach(g=>root.add(g));}
-function gy(x,y,z,n){const f=2*Math.PI*n;return Math.sin(x*f)*Math.cos(y*f)+Math.sin(y*f)*Math.cos(z*f)+Math.sin(z*f)*Math.cos(x*f)}
-function smoothGyroidGeometry(flat,cells,sx,sy,sz){
+function gy(x,y,z){return Math.sin(x)*Math.cos(y)+Math.sin(y)*Math.cos(z)+Math.sin(z)*Math.cos(x)}
+function smoothGyroidGeometry(flat,sample){
  const pos=[],indices=[],lookup=new Map(),eps=.0005;
- const sample=(x,y,z)=>gy(x/sx*2.15,y/sy*2.15,z/sz*2.15,cells);
  const vertex=(x,y,z)=>{const key=[x,y,z].map(v=>Math.round(v*1e5)).join(",");if(lookup.has(key))return lookup.get(key);const id=pos.length/3;pos.push(x,y,z);lookup.set(key,id);return id};
  for(let i=0;i<flat.length;i+=9){
   let a=[flat[i],flat[i+1],flat[i+2]],b=[flat[i+3],flat[i+4],flat[i+5]],d=[flat[i+6],flat[i+7],flat[i+8]];
@@ -45,18 +44,26 @@ function smoothGyroidGeometry(flat,cells,sx,sy,sz){
  }
  const geo=new T.BufferGeometry();geo.setAttribute("position",new T.Float32BufferAttribute(pos,3));geo.setIndex(indices);geo.computeVertexNormals();geo.computeBoundingSphere();return geo;
 }
+function clipToCylinder(flat,halfLength,radius){
+ const out=[];
+ const clip=(poly,A,B,C,D)=>{const next=[];if(!poly.length)return next;let p=poly[poly.length-1],fp=A*p[0]+B*p[1]+C*p[2]-D;for(const q of poly){const fq=A*q[0]+B*q[1]+C*q[2]-D,ip=fp<=1e-7,iq=fq<=1e-7;if(ip!==iq){const t=fp/(fp-fq);next.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t,p[2]+(q[2]-p[2])*t])}if(iq)next.push(q);p=q;fp=fq}return next};
+ for(let i=0;i<flat.length;i+=9){let poly=[[flat[i],flat[i+1],flat[i+2]],[flat[i+3],flat[i+4],flat[i+5]],[flat[i+6],flat[i+7],flat[i+8]]];poly=clip(poly,1,0,0,halfLength);poly=clip(poly,-1,0,0,halfLength);for(let j=0;j<64&&poly.length;j++){const a=2*Math.PI*j/64;poly=clip(poly,0,Math.cos(a),Math.sin(a),radius)}for(let j=1;j<poly.length-1;j++)out.push(...poly[0],...poly[j],...poly[j+1])}return out;
+}
 function buildCore(){
   if(parts.core){root.remove(parts.core);parts.core.traverse(o=>{if(o.geometry)o.geometry.dispose()})}
   const res=Number($("res").value),cells=Number($("cells").value),th=Number($("band").value);
   // Compact cylindrical scaffold cartridge with a consistent cell scale.
-  const nx=res*2,ny=res,nz=res,sx=5.55,sy=2.24,sz=2.24;
+  const nx=res*2,ny=res,nz=res,sx=5.36,sy=2.12,sz=2.12;
+  // Axial cell count sets a shared physical wavelength in all three axes.
+  const kx=2*Math.PI*cells/sx, ky=kx, kz=kx;
+  const sample=(x,y,z)=>gy(x*kx,y*ky,z*kz);
   const idx=(i,j,k)=>i+(nx+1)*(j+(ny+1)*k);
   const field=new Float32Array((nx+1)*(ny+1)*(nz+1));
   for(let k=0;k<=nz;k++)for(let j=0;j<=ny;j++)for(let i=0;i<=nx;i++){
    const x=(i/nx-.5)*sx,y=(j/ny-.5)*sy,z=(k/nz-.5)*sz;
    // Sample the analytic field throughout the volume; clipping is applied to
    // extracted triangles, not by injecting an artificial scalar wall.
-   field[idx(i,j,k)]=gy(x/sx*2.15,y/sy*2.15,z/sz*2.15,cells);
+   field[idx(i,j,k)]=sample(x,y,z);
   }
   const corners=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
   const tets=[[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]],grp=new T.Group();
@@ -72,20 +79,23 @@ function buildCore(){
      const ins=tet.filter(q=>v[q]<iso),outs=tet.filter(q=>v[q]>=iso);
      if(!ins.length||!outs.length)continue;
      const cr=[];for(const a of ins)for(const b of outs)cr.push(interp(p[a],p[b],v[a],v[b]));
-     const inside=q=>Math.abs(q[0])<sx*.485&&(q[1]/(sy/2))**2+(q[2]/(sz/2))**2<.94;
-     const tri=(a,b,d)=>{if(inside(a)&&inside(b)&&inside(d))vs.push(...a,...b,...d)};
+     const tri=(a,b,d)=>vs.push(...a,...b,...d);
      if(cr.length===3)tri(cr[0],cr[1],cr[2]);
      else if(cr.length===4){tri(cr[0],cr[1],cr[2]);tri(cr[0],cr[2],cr[3])}
     }
    }
-   const geo=smoothGyroidGeometry(vs,cells,sx,sy,sz);
+   // Clip triangle polygons against a faceted cylindrical envelope. This
+  // preserves boundary fragments instead of dropping whole triangles and
+  // creating jagged, randomly perforated edges.
+  const clipped=clipToCylinder(vs,sx/2-.035,1.025);
+  const geo=smoothGyroidGeometry(clipped,sample);
    grp.add(new T.Mesh(geo,M.core));
   }
   // Retaining rings make the gyroid read as a replaceable reactor insert.
-  for(const x of [-2.79,2.79]){
-   const ring=new T.Mesh(new T.TorusGeometry(.99,.075,12,64),M.steel);
+  for(const x of [-2.66,2.66]){
+   const ring=new T.Mesh(new T.TorusGeometry(.99,.045,10,64),M.steel);
    ring.rotation.y=Math.PI/2;ring.position.set(x,0,0);ring.userData.part="core";grp.add(ring);
-   const inner=new T.Mesh(new T.TorusGeometry(.88,.025,8,64),M.dark);
+   const inner=new T.Mesh(new T.TorusGeometry(.91,.018,8,64),M.dark);
    inner.rotation.y=Math.PI/2;inner.position.set(x,0,0);inner.userData.part="core";grp.add(inner);
   }
   parts.core=grp;if(root)root.add(grp);
@@ -97,8 +107,8 @@ function explode(on){exploded=on;$("explode").textContent=on?"Restore assembly":
 function calc(){const get=(id,min,max)=>{const v=Number($(id).value);if(!Number.isFinite(v)||v<min||v>max){$(id).style.borderColor="#d98f7e";return null}$(id).style.borderColor="";return v},q=get("q",.1,5000),D=get("d",1,100),l=get("l",10,1000),rho=get("rho",1,2000),mu0=get("mu",.01,1000);if([q,D,l,rho,mu0].some(v=>v===null)){["vel","re","rt","dp"].forEach(id=>$(id).textContent="Invalid");return}const Q=q*1e-6/60,d=D/1000,Lm=l/1000,mu=mu0/1000,A=Math.PI*d*d/4,v=Q/A,re=rho*v*d/mu,t=A*Lm/Q,dp=128*mu*Lm*Q/(Math.PI*d**4);$("vel").textContent=v.toPrecision(3);$("re").textContent=re.toFixed(0);$("rt").textContent=t<1?(t*1000).toFixed(1)+" ms":t.toFixed(2)+" s";$("dp").textContent=dp>9999?(dp/1000).toFixed(1)+"k":dp.toFixed(2);chart(q,D,l,mu0)}
 function chart(q,D,L,mu0){const c=$("chart"),x=c.getContext("2d"),w=c.width,h=c.height;x.clearRect(0,0,w,h);x.strokeStyle="#27343b";for(let i=1;i<5;i++){x.beginPath();x.moveTo(42,12+(h-38)*i/5);x.lineTo(w-12,12+(h-38)*i/5);x.stroke()}const d=D/1000,l=L/1000,mu=mu0/1000,arr=[];for(let i=0;i<=50;i++){const flow=Math.max(.1,q*2)*i/50;arr.push(128*mu*l*(flow*1e-6/60)/(Math.PI*d**4))}const mx=Math.max(1,...arr);x.strokeStyle="#79d7c3";x.lineWidth=2;x.beginPath();arr.forEach((v,i)=>{const px=42+(w-56)*i/50,py=h-24-(h-48)*v/mx;i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke();x.fillStyle="#aab6bd";x.font="12px monospace";x.fillText("ΔP (Pa)",7,14);x.fillText("Flow (mL/min)",w-130,h-5)}
 function toast(s){$("toast").textContent=s;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2200)}
-try{renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:true});renderer.localClippingEnabled=true;renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));renderer.setSize(stage.clientWidth,stage.clientHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;scene=new T.Scene();scene.background=new T.Color(0x171a1d);camera=new T.PerspectiveCamera(32,stage.clientWidth/stage.clientHeight,.01,100);controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.dampingFactor=.07;controls.autoRotate=true;controls.autoRotateSpeed=1.25;controls.addEventListener("start",()=>{if(autoRotate){autoRotate=false;controls.autoRotate=false;$("autorotate").textContent="Auto-rotate: off";$("autorotate").classList.remove("active")}});scene.add(new T.HemisphereLight(0xeaf8ff,0x374754,2.5));const light=(col,int,pos)=>{const a=new T.DirectionalLight(col,int);a.position.set(...pos);scene.add(a)};light(0xffffff,3.0,[5,9,7]);light(0xb8c4cb,1.2,[-7,2,-5]);light(0xffffff,0.8,[0,-4,6]);const grid=new T.GridHelper(20,40,0x26343b,0x172127);grid.position.y=-2.15;scene.add(grid);assembly();addPartLabels();focus();$("loading").style.display="none";$("status").textContent="WEBGL READY · LOCAL CALCULATIONS";calc();applyMode("solid");
-$("focus").onclick=focus;$("autorotate").onclick=()=>{autoRotate=!autoRotate;controls.autoRotate=autoRotate;$("autorotate").textContent="Auto-rotate: "+(autoRotate?"on":"off");$("autorotate").classList.toggle("active",autoRotate)};$("reset").onclick=()=>{controls.reset();focus()};$("explode").onclick=()=>explode(!exploded);$("xr").onclick=()=>applyMode(mode==="xray"?"solid":"xray");$("full").onclick=()=>document.fullscreenElement?document.exitFullscreen():stage.requestFullscreen?.();$("solid").onclick=()=>applyMode("solid");$("wire").onclick=()=>applyMode("wire");$("xray").onclick=()=>applyMode("xray");$("coreonly").onclick=()=>applyMode("core");$("sectioncut").onclick=()=>{sectionActive=!sectionActive;M.core.clippingPlanes=sectionActive?[sectionPlane]:[];$("sectioncut").classList.toggle("active",sectionActive);$("sectioncut").textContent=sectionActive?"Section cut: on":"Section cut";toast(sectionActive?"Gyroid half-section enabled":"Gyroid section restored")};
+try{renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:true});renderer.localClippingEnabled=true;renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));renderer.setSize(stage.clientWidth,stage.clientHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;scene=new T.Scene();scene.background=new T.Color(0x171a1d);camera=new T.PerspectiveCamera(32,stage.clientWidth/stage.clientHeight,.01,100);controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.dampingFactor=.07;controls.autoRotate=true;controls.autoRotateSpeed=1.25;controls.addEventListener("start",()=>{if(autoRotate){autoRotate=false;controls.autoRotate=false;$("autorotate").textContent="Auto-rotate: off";$("autorotate").classList.remove("active")}});scene.add(new T.HemisphereLight(0xeaf8ff,0x374754,2.5));const light=(col,int,pos)=>{const a=new T.DirectionalLight(col,int);a.position.set(...pos);scene.add(a)};light(0xffffff,3.0,[5,9,7]);light(0xb8c4cb,1.2,[-7,2,-5]);light(0xffffff,0.8,[0,-4,6]);const grid=new T.GridHelper(20,40,0x26343b,0x172127);grid.position.y=-2.15;grid.material.transparent=true;grid.material.opacity=.24;grid.material.depthWrite=false;scene.add(grid);assembly();addPartLabels();focus();$("loading").style.display="none";$("status").textContent="WEBGL READY · LOCAL CALCULATIONS";calc();applyMode("solid");
+$("focus").onclick=focus;$("autorotate").onclick=()=>{autoRotate=!autoRotate;controls.autoRotate=autoRotate;$("autorotate").textContent="Auto-rotate: "+(autoRotate?"on":"off");$("autorotate").classList.toggle("active",autoRotate)};$("reset").onclick=()=>{controls.reset();focus()};$("explode").onclick=()=>explode(!exploded);$("xr").onclick=()=>applyMode(mode==="xray"?"solid":"xray");$("full").onclick=()=>document.fullscreenElement?document.exitFullscreen():stage.requestFullscreen?.();$("solid").onclick=()=>applyMode("solid");$("wire").onclick=()=>applyMode("wire");$("xray").onclick=()=>applyMode("xray");$("coreonly").onclick=()=>applyMode("core");$("sectioncut").onclick=()=>{sectionActive=!sectionActive;M.core.clippingPlanes=sectionActive?[sectionPlane]:[];M.core.clipShadows=sectionActive;$("sectioncut").classList.toggle("active",sectionActive);$("sectioncut").textContent=sectionActive?"Section cut: on":"Section cut";toast(sectionActive?"Gyroid clipping section enabled · no cut-face cap":"Gyroid section restored")};
 window.addEventListener("keydown",e=>{if(["INPUT","SELECT"].includes(document.activeElement.tagName))return;const m={"1":"solid","2":"wire","3":"xray","4":"core"};if(m[e.key])applyMode(m[e.key]);if(e.key.toLowerCase()==="f")focus();if(e.key==="Escape"&&exploded)explode(false)});
 document.querySelectorAll("[data-part]").forEach(el=>el.onchange=()=>{if(parts[el.dataset.part])parts[el.dataset.part].visible=el.checked&&(mode!=="core"||el.dataset.part==="core")});
 $("opacity").oninput=()=>{$("opval").textContent=$("opacity").value+"%";M.glass.opacity=Number($("opacity").value)/100};
