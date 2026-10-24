@@ -163,3 +163,13 @@ Searches covered targeted web results and Google Patents records for gyroid bior
 9. US8008065B2. Disposable bioreactor vessel port. https://patents.google.com/patent/US8008065B2/en
 10. US20250257300A1. Microtiter-plate-based high throughput perfusion bioreactor. https://patents.google.com/patent/US20250257300A1/en
 11. Han X et al. (2026). Nature Communications, 17, 7283. https://doi.org/10.1038/s41467-026-73452-y
+
+
+## 1.1 Geometry patch log — 24 October 2026
+
+The marching-tetrahedra extraction was patched to remove duplicate edge intersections and sort the intersection polygon around its centroid before triangulating it. This addresses a specific algorithmic risk: treating four intersections in arbitrary nested-loop order can create crossed quad diagonals and folded triangles. The code change is a rendering/mesh-generation improvement, not proof that the output is watertight or printable.
+
+- Commit: [3d5788388fa2e7576d9355e557fdff1e014afdf4](https://github.com/meenavignesh-svg/AEGIS-BIO-NODE/commit/3d5788388fa2e7576d9355e557fdff1e014afdf4)
+- Follow-up intersection de-duplication commit: [b1f9ae50b037ba4ef08504ec42d59eb0d2b9fef2](https://github.com/meenavignesh-svg/AEGIS-BIO-NODE/commit/b1f9ae50b037ba4ef08504ec42d59eb0d2b9fef2)
+
+**Still required:** visually inspect the regenerated model in a browser; compare at all three mesh resolutions and all threshold values; calculate connected components, boundary edges, non-manifold edges, degenerate faces, and self-intersections on exported mesh data; and inspect the clipped boundary. No such tests have been run as part of this patch, and the application still does not export a validated solid mesh.
