@@ -12,10 +12,10 @@ The website is a static frontend. Three.js and OrbitControls are loaded from jsD
 
 ## Current interactive features
 
-- Procedural 3D assembly with a transparent concept chamber, end collars, clamp/fastener details, inlet/outlet unions, support saddles, and four proposed optical docking locations.
+- Procedural 3D assembly with a transparent concept chamber, end collars, clamp/fastener details, inlet/outlet unions, support saddles, and three proposed sensor-dock locations in the current source.
 - Procedural sampled gyroid level-set preview with adjustable cell count, threshold, and preview resolution.
 - Solid, wireframe, X-ray, and core-only views (keyboard shortcuts **1–4**).
-- Orbit, zoom and pan; Focus model, Reset view, Explode/restore, X-ray toggle, and fullscreen controls.
+- Orbit, zoom and pan; Focus model, Reset view, Explode/restore, X-ray toggle, section clipping, and fullscreen controls.
 - Component visibility toggles and chamber opacity adjustment.
 - In-browser reference calculations and a pressure-drop-versus-flow chart for a straight circular tube.
 - Responsive layout and a WebGL startup error message.
@@ -45,6 +45,10 @@ g(x,y,z)=\sin(x)\cos(y)+\sin(y)\cos(z)+\sin(z)\cos(x)
 This is a visual mathematical level-set preview, not a robustly thickened, watertight, parametric, or print-ready solid. The threshold is dimensionless. Mesh resolution trades detail for browser performance. No validated porosity or solid fraction is reported.
 
 The dimensions, material appearances, docking interfaces, fasteners, seals, and port arrangements are provisional visual concepts. The metallic finish does not certify a specific alloy. Sensor interfaces are proposed—not tested optical sensors.
+
+## Research and prior-art audit
+
+See [the preliminary engineering audit, research question, prior-art comparison, equations, and validation plan](docs/ENGINEERING_AUDIT_AND_PRIOR_ART.md). This is a targeted desk review, not an exhaustive patent search or a legal novelty opinion. The proposed research direction is a hypothesis and requires experimental evidence.
 
 ## Run locally
 
