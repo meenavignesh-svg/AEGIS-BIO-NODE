@@ -78,7 +78,7 @@ function buildCore(){
     for(const tet of tets){
      const ins=tet.filter(q=>v[q]<iso),outs=tet.filter(q=>v[q]>=iso);
      if(!ins.length||!outs.length)continue;
-     const cr=[];for(const a of ins)for(const b of outs)cr.push(interp(p[a],p[b],v[a],v[b]));
+     const cr=[];for(const a of ins)for(const b of outs){const q=interp(p[a],p[b],v[a],v[b]);if(!cr.some(r=>Math.hypot(q[0]-r[0],q[1]-r[1],q[2]-r[2])<1e-8))cr.push(q)}
      const tri=(a,b,d)=>vs.push(...a,...b,...d);
      if(cr.length===3)tri(cr[0],cr[1],cr[2]);
      else if(cr.length===4){tri(cr[0],cr[1],cr[2]);tri(cr[0],cr[2],cr[3])}
