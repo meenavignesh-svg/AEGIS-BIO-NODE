@@ -79,9 +79,15 @@ function buildCore(){
      const ins=tet.filter(q=>v[q]<iso),outs=tet.filter(q=>v[q]>=iso);
      if(!ins.length||!outs.length)continue;
      const cr=[];for(const a of ins)for(const b of outs){const q=interp(p[a],p[b],v[a],v[b]);if(!cr.some(r=>Math.hypot(q[0]-r[0],q[1]-r[1],q[2]-r[2])<1e-8))cr.push(q)}
-     const tri=(a,b,d)=>vs.push(...a,...b,...d);
-     if(cr.length===3)tri(cr[0],cr[1],cr[2]);
-     else if(cr.length===4){tri(cr[0],cr[1],cr[2]);tri(cr[0],cr[2],cr[3])}
+     if(cr.length>=3){
+      const center=cr.reduce((s,p)=>s.map((v,i)=>v+p[i]/cr.length),[0,0,0]);
+      const n=[(cr[1][1]-cr[0][1])*(cr[2][2]-cr[0][2])-(cr[1][2]-cr[0][2])*(cr[2][1]-cr[0][1]),(cr[1][2]-cr[0][2])*(cr[2][0]-cr[0][0])-(cr[1][0]-cr[0][0])*(cr[2][2]-cr[0][2]),(cr[1][0]-cr[0][0])*(cr[2][1]-cr[0][1])-(cr[1][1]-cr[0][1])*(cr[2][0]-cr[0][0])];
+      const nl=Math.hypot(...n);if(nl<1e-10)continue;for(let z=0;z<3;z++)n[z]/=nl;
+      const axis=Math.abs(n[0])<.8?[1,0,0]:[0,1,0],u=[n[1]*axis[2]-n[2]*axis[1],n[2]*axis[0]-n[0]*axis[2],n[0]*axis[1]-n[1]*axis[0]],ul=Math.hypot(...u);for(let z=0;z<3;z++)u[z]/=ul;
+      const w=[n[1]*u[2]-n[2]*u[1],n[2]*u[0]-n[0]*u[2],n[0]*u[1]-n[1]*u[0]];
+      cr.sort((a,b)=>Math.atan2((a[0]-center[0])*w[0]+(a[1]-center[1])*w[1]+(a[2]-center[2])*w[2],(a[0]-center[0])*u[0]+(a[1]-center[1])*u[1]+(a[2]-center[2])*u[2])-Math.atan2((b[0]-center[0])*w[0]+(b[1]-center[1])*w[1]+(b[2]-center[2])*w[2],(b[0]-center[0])*u[0]+(b[1]-center[1])*u[1]+(b[2]-center[2])*u[2]));
+      for(let z=1;z<cr.length-1;z++)vs.push(...cr[0],...cr[z],...cr[z+1]);
+     }
     }
    }
    // Clip triangle polygons against a faceted cylindrical envelope. This
